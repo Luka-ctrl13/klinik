@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BilimJournal — Электронный журнал преподавателя</title>
+<meta name="description" content="Электронный журнал преподавателя: оценки, посещаемость, КТП, аналитика, импорт и экспорт данных.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232f6df6'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>Б</text></svg>">
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="login">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="mark">Б</div>
+      <div><b>BilimJournal</b><span>Электронный журнал преподавателя</span></div>
+    </div>
+    <h1>Вход в систему</h1>
+    <p class="sub">Войдите, чтобы продолжить работу с журналом</p>
+    <form id="loginForm">
+      <div class="field">
+        <label>ФИО преподавателя</label>
+        <input id="liName" type="text" placeholder="Иванов Иван Иванович" value="Преподаватель" autocomplete="name">
+      </div>
+      <div class="field">
+        <label>Логин</label>
+        <input id="liLogin" type="text" placeholder="teacher" value="teacher" autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Пароль</label>
+        <input id="liPass" type="password" placeholder="••••••" value="1234" autocomplete="current-password">
+      </div>
+      <button class="btn block" type="submit">Войти в журнал →</button>
+    </form>
+    <div class="login-hint">Демо-доступ: логин <b>teacher</b> / пароль <b>1234</b></div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="mark">Б</div>
+      <div><b>BilimJournal</b><span>колледж · 2025–2026</span></div>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="group-label">Основное</div>
+      <a href="#/dashboard" data-route="dashboard"><span class="ic">🏠</span> Главная</a>
+      <a href="#/journal" data-route="journal"><span class="ic">📊</span> Журнал оценок</a>
+      <a href="#/topics" data-route="topics"><span class="ic">📚</span> Темы уроков (КТП)</a>
+      <a href="#/attendance" data-route="attendance"><span class="ic">✅</span> Посещаемость</a>
+      <div class="group-label">Данные</div>
+      <a href="#/students" data-route="students"><span class="ic">👥</span> Контингент</a>
+      <a href="#/groups" data-route="groups"><span class="ic">🏫</span> Группы</a>
+      <a href="#/analytics" data-route="analytics"><span class="ic">📈</span> Аналитика</a>
+      <div class="group-label">Сервис</div>
+      <a href="#/io" data-route="io"><span class="ic">💾</span> Импорт / Экспорт</a>
+      <a href="#/settings" data-route="settings"><span class="ic">⚙️</span> Настройки</a>
+    </nav>
+    <div class="foot">
+      <div class="user-chip">
+        <div class="av" id="userAv">П</div>
+        <div><b id="userName">Преподаватель</b><span>Преподаватель</span></div>
+      </div>
+      <button class="btn soft sm block" style="margin-top:8px" id="logoutBtn">Выйти</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <button class="icon-btn hamb" id="hamb">☰</button>
+      <div class="page-title" id="pageTitle">Главная</div>
+      <div class="spacer"></div>
+      <div class="search">
+        <span>🔎</span>
+        <input id="globalSearch" type="text" placeholder="Поиск студента по ФИО / ИИН...">
+      </div>
+      <button class="icon-btn" id="quickExport" title="Быстрый экспорт текущего журнала">⬇️</button>
+    </div>
+    <div class="content" id="view"><!-- routed views --></div>
+  </div>
+</div>
+</div>
+
+<!-- toast + modal -->
+<div id="toast"></div>
+<div class="modal-bg" id="modalBg">
+  <div class="modal" id="modal"></div>
+</div>
+
+<!-- libs (с graceful fallback при оффлайне) -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/storage.js"></script>
+<script src="assets/js/io.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
