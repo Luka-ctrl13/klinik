@@ -126,7 +126,7 @@
     const data = gs.map(g => { const s = Store.groupStats(g.id, g.disciplines[0]); return s ? +s.avg.toFixed(2) : 0; });
     charts.push(new Chart($('#chDash'), {
       type: 'bar',
-      data: { labels, datasets: [{ label: 'Средний балл', data, backgroundColor: '#2f6df6', borderRadius: 6, maxBarThickness: 34 }] },
+      data: { labels, datasets: [{ label: 'Средний балл', data, backgroundColor: '#10b981', borderRadius: 6, maxBarThickness: 34 }] },
       options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 5 } }, responsive: true }
     }));
     // распределение оценок
@@ -136,7 +136,7 @@
     charts.push(new Chart($('#chPie'), {
       type: 'doughnut',
       data: { labels: ['Отлично (5)', 'Хорошо (4)', 'Удовл. (3)', 'Неуд. (2)'],
-        datasets: [{ data: [dist[5], dist[4], dist[3], dist[2]], backgroundColor: ['#22c55e', '#2563eb', '#f59e0b', '#ef4444'] }] },
+        datasets: [{ data: [dist[5], dist[4], dist[3], dist[2]], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'], borderWidth: 0 }] },
       options: { plugins: { legend: { position: 'bottom' } }, cutout: '62%' }
     }));
   }
@@ -409,8 +409,8 @@
     // показатели — прогресс-бары
     const bar = (lbl, val, color) => `<div class="kv"><span>${lbl}</span><b>${val.toFixed(0)}%</b></div>
       <div class="progress" style="margin-bottom:16px"><i style="width:${Math.min(val,100)}%;background:${color}"></i></div>`;
-    $('#bars').innerHTML = bar('Успеваемость', s.success, '#22c55e') + bar('Качество знаний', s.quality, '#f59e0b')
-      + bar('Посещаемость', s.attendance, '#10b6a6') + bar('Заполнение журнала', Math.min(s.count / (g.students.length * Store.datesFor(sel.gid, sel.disc).length || 1) * 100, 100), '#2f6df6');
+    $('#bars').innerHTML = bar('Успеваемость', s.success, '#10b981') + bar('Качество знаний', s.quality, '#f59e0b')
+      + bar('Посещаемость', s.attendance, '#14b8a6') + bar('Заполнение журнала', Math.min(s.count / (g.students.length * Store.datesFor(sel.gid, sel.disc).length || 1) * 100, 100), '#3b82f6');
 
     // рейтинг студентов
     const ranked = g.students.map((st, si) => ({ fio: st.fio, avg: Store.studentAvg(sel.gid, sel.disc, si) }))

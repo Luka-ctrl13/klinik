@@ -43,32 +43,32 @@
 <!-- ============ APP ============ -->
 <div id="app">
 <div class="layout">
-  <!-- SIDEBAR -->
+  <!-- SIDEBAR (компактный, разворачивается при наведении) -->
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <div class="mark">Б</div>
-      <div><b>BilimJournal</b><span>колледж · 2025–2026</span></div>
+      <div class="brand-text"><b>BilimJournal</b><span>колледж · 2025–2026</span></div>
     </div>
     <nav class="nav" id="nav">
       <div class="group-label">Основное</div>
-      <a href="#/dashboard" data-route="dashboard"><span class="ic">🏠</span> Главная</a>
-      <a href="#/journal" data-route="journal"><span class="ic">📊</span> Журнал оценок</a>
-      <a href="#/topics" data-route="topics"><span class="ic">📚</span> Темы уроков (КТП)</a>
-      <a href="#/attendance" data-route="attendance"><span class="ic">✅</span> Посещаемость</a>
+      <a href="#/dashboard" data-route="dashboard" title="Главная"><span class="ic">🏠</span><span class="lbl">Главная</span></a>
+      <a href="#/journal" data-route="journal" title="Журнал оценок"><span class="ic">📊</span><span class="lbl">Журнал оценок</span></a>
+      <a href="#/topics" data-route="topics" title="Темы уроков"><span class="ic">📚</span><span class="lbl">Темы уроков</span></a>
+      <a href="#/attendance" data-route="attendance" title="Посещаемость"><span class="ic">✅</span><span class="lbl">Посещаемость</span></a>
       <div class="group-label">Данные</div>
-      <a href="#/students" data-route="students"><span class="ic">👥</span> Контингент</a>
-      <a href="#/groups" data-route="groups"><span class="ic">🏫</span> Группы</a>
-      <a href="#/analytics" data-route="analytics"><span class="ic">📈</span> Аналитика</a>
+      <a href="#/students" data-route="students" title="Контингент"><span class="ic">👥</span><span class="lbl">Контингент</span></a>
+      <a href="#/groups" data-route="groups" title="Группы"><span class="ic">🏫</span><span class="lbl">Группы</span></a>
+      <a href="#/analytics" data-route="analytics" title="Аналитика"><span class="ic">📈</span><span class="lbl">Аналитика</span></a>
       <div class="group-label">Сервис</div>
-      <a href="#/io" data-route="io"><span class="ic">💾</span> Импорт / Экспорт</a>
-      <a href="#/settings" data-route="settings"><span class="ic">⚙️</span> Настройки</a>
+      <a href="#/io" data-route="io" title="Импорт / Экспорт"><span class="ic">💾</span><span class="lbl">Импорт / Экспорт</span></a>
+      <a href="#/settings" data-route="settings" title="Настройки"><span class="ic">⚙️</span><span class="lbl">Настройки</span></a>
     </nav>
     <div class="foot">
       <div class="user-chip">
         <div class="av" id="userAv">П</div>
-        <div><b id="userName">Преподаватель</b><span>Преподаватель</span></div>
+        <div class="user-meta"><b id="userName">Преподаватель</b><span>Преподаватель</span></div>
       </div>
-      <button class="btn soft sm block" style="margin-top:8px" id="logoutBtn">Выйти</button>
+      <button class="btn soft sm block logout" id="logoutBtn"><span class="ic">⎋</span><span class="lbl">Выйти</span></button>
     </div>
   </aside>
 
