@@ -10,10 +10,11 @@
   // ---------- утилиты ----------
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const initials = fio => fio.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  const I = (name, size) => (window.Icons ? Icons.svg(name, size) : ''); // SVG-иконка
   function toast(msg, type = 'info') {
     const t = document.createElement('div');
     t.className = 'toast ' + type;
-    t.innerHTML = `<span>${type === 'ok' ? '✅' : type === 'err' ? '⚠️' : 'ℹ️'}</span>${esc(msg)}`;
+    t.innerHTML = `<span class="ic">${I(type === 'ok' ? 'check' : type === 'err' ? 'alert' : 'info', 18)}</span>${esc(msg)}`;
     $('#toast').appendChild(t);
     setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(40px)'; setTimeout(() => t.remove(), 300); }, 3200);
   }
@@ -23,7 +24,7 @@
   // модалка
   function modal(title, body, foot) {
     $('#modal').innerHTML = `
-      <div class="modal-head"><h3>${title}</h3><button class="icon-btn" onclick="App.closeModal()">✕</button></div>
+      <div class="modal-head"><h3>${title}</h3><button class="icon-btn" onclick="App.closeModal()">${I('x', 18)}</button></div>
       <div class="modal-body">${body}</div>
       ${foot ? `<div class="modal-foot">${foot}</div>` : ''}`;
     $('#modalBg').classList.add('show');
@@ -70,10 +71,10 @@
     const s = Store.globalStats();
     view.innerHTML = `
       <div class="cards">
-        ${stat('bg-blue', '👥', s.totalStudents, 'Студентов в контингенте', 'up', '+' + s.groups + ' групп')}
-        ${stat('bg-teal', '📝', s.marks, 'Выставлено оценок', 'up', 'журнал')}
-        ${stat('bg-green', '⭐', s.avg ? s.avg.toFixed(2) : '—', 'Средний балл', s.avg >= 4 ? 'up' : 'down', s.avg ? s.avg.toFixed(1) : '0')}
-        ${stat('bg-amber', '🎯', (s.quality || 0).toFixed(0) + '%', 'Качество знаний', s.quality >= 50 ? 'up' : 'down', 'оценки 4–5')}
+        ${stat('bg-blue', 'users', s.totalStudents, 'Студентов в контингенте', 'up', '+' + s.groups + ' групп')}
+        ${stat('bg-teal', 'pencil', s.marks, 'Выставлено оценок', 'up', 'журнал')}
+        ${stat('bg-green', 'star', s.avg ? s.avg.toFixed(2) : '—', 'Средний балл', s.avg >= 4 ? 'up' : 'down', s.avg ? s.avg.toFixed(1) : '0')}
+        ${stat('bg-amber', 'target', (s.quality || 0).toFixed(0) + '%', 'Качество знаний', s.quality >= 50 ? 'up' : 'down', 'оценки 4–5')}
       </div>
       <div class="two-col">
         <div class="panel">
@@ -115,7 +116,7 @@
   function stat(bg, ic, big, lbl, trend, tval) {
     return `<div class="stat">
       <div class="trend ${trend}">${trend === 'up' ? '▲' : '▼'} ${esc(tval)}</div>
-      <div class="ic ${bg}">${ic}</div>
+      <div class="ic ${bg}">${I(ic, 22)}</div>
       <div class="big">${esc(big)}</div><div class="lbl">${esc(lbl)}</div></div>`;
   }
 
@@ -173,9 +174,9 @@
             <span><b class="chip-grade m3">3</b></span><span><b class="chip-grade m2">2</b></span>
             <span><b class="att">Н</b> — отсутствовал</span>
           </div>
-          <button class="btn ghost sm" id="addDateBtn">＋ Урок</button>
-          <button class="btn green sm" id="expXlsx">⬇ Excel</button>
-          <button class="btn soft sm" id="expCsv">⬇ CSV</button>
+          <button class="btn ghost sm" id="addDateBtn">${I('plus', 16)} Урок</button>
+          <button class="btn green sm" id="expXlsx">${I('sheet', 16)} Excel</button>
+          <button class="btn soft sm" id="expCsv">${I('fileText', 16)} CSV</button>
         </div>
         <div class="panel-body" style="padding:0">
           <div id="journalGrid"></div>
@@ -264,7 +265,7 @@
     ensureSel();
     view.innerHTML = `${selectorBar()}
       <div class="panel"><div class="panel-head"><h3 id="tpTitle"></h3><div class="spacer"></div>
-        <button class="btn ghost sm" id="addT">＋ Урок</button></div>
+        <button class="btn ghost sm" id="addT">${I('plus', 16)} Урок</button></div>
         <div class="panel-body" id="topicList"></div></div>`;
     wireSelector(renderTopics);
     drawTopics();
@@ -281,7 +282,7 @@
         <div class="ldate"><b>${dt.getDate()}</b><span>${monthName(dt.getMonth())}</span></div>
         <div class="lbody"><input data-d="${d}" placeholder="Урок ${i + 1}: введите тему урока..." value="${esc(Store.getTopic(sel.gid, sel.disc, d))}"></div>
       </div>`;
-    }).join('') || `<div class="empty-state"><div class="big">📚</div>Уроки ещё не запланированы</div>`;
+    }).join('') || `<div class="empty-state"><div class="big">${I('book', 50)}</div>Уроки ещё не запланированы</div>`;
     $('#topicList').querySelectorAll('input').forEach(inp => inp.onchange = e =>
       { Store.setTopic(sel.gid, sel.disc, e.target.dataset.d, e.target.value.trim()); toast('Тема сохранена', 'ok'); });
   }
@@ -325,7 +326,7 @@
       <div class="toolbar">
         <div class="ctl"><label>Поиск</label><input id="stSearch" placeholder="ФИО или ИИН..." value="${esc(stFilter)}" style="min-width:260px"></div>
         <div class="spacer"></div>
-        <button class="btn green sm" id="expStud">⬇ Экспорт контингента (Excel)</button>
+        <button class="btn green sm" id="expStud">${I('download', 16)} Экспорт контингента (Excel)</button>
       </div>
       <div class="panel"><div class="panel-body" style="padding:0">
         <table class="dtable"><thead><tr><th>№</th><th>ФИО</th><th>ИИН</th><th>Дата рожд.</th><th>Пол</th><th>Группа</th><th>Специальность</th></tr></thead>
@@ -348,7 +349,7 @@
         <td><span class="badge ${s.sex === 'мужской' ? 'blue' : 'teal'}">${esc(s.sex || '—')}</span></td>
         <td><span class="badge gray">${esc(s.grp)}</span></td>
         <td class="muted">${esc(s.dept || s.fac || '—')}</td></tr>`).join('')
-        || `<tr><td colspan="7"><div class="empty-state"><div class="big">🔍</div>Ничего не найдено</div></td></tr>`;
+        || `<tr><td colspan="7"><div class="empty-state"><div class="big">${I('search', 50)}</div>Ничего не найдено</div></td></tr>`;
       $('#stInfo').textContent = `${filtered.length} студентов · стр. ${stPage + 1}/${pages}`;
     };
     $('#stSearch').oninput = e => { stFilter = e.target.value; stPage = 0; draw(); };
@@ -401,10 +402,10 @@
     const g = Store.group(sel.gid);
     const s = Store.groupStats(sel.gid, sel.disc) || { avg: 0, success: 0, quality: 0, attendance: 100, count: 0 };
     $('#anCards').innerHTML = `
-      ${stat('bg-blue', '⭐', s.avg.toFixed(2), 'Средний балл', s.avg >= 4 ? 'up' : 'down', 'группа')}
-      ${stat('bg-green', '📈', s.success.toFixed(0) + '%', 'Успеваемость', 'up', '≥3')}
-      ${stat('bg-amber', '🎯', s.quality.toFixed(0) + '%', 'Качество знаний', s.quality >= 50 ? 'up' : 'down', '≥4')}
-      ${stat('bg-teal', '✅', s.attendance.toFixed(0) + '%', 'Посещаемость', s.attendance >= 90 ? 'up' : 'down', 'присут.')}`;
+      ${stat('bg-blue', 'star', s.avg.toFixed(2), 'Средний балл', s.avg >= 4 ? 'up' : 'down', 'группа')}
+      ${stat('bg-green', 'trendUp', s.success.toFixed(0) + '%', 'Успеваемость', 'up', '≥3')}
+      ${stat('bg-amber', 'target', s.quality.toFixed(0) + '%', 'Качество знаний', s.quality >= 50 ? 'up' : 'down', '≥4')}
+      ${stat('bg-teal', 'check', s.attendance.toFixed(0) + '%', 'Посещаемость', s.attendance >= 90 ? 'up' : 'down', 'присут.')}`;
 
     // показатели — прогресс-бары
     const bar = (lbl, val, color) => `<div class="kv"><span>${lbl}</span><b>${val.toFixed(0)}%</b></div>
@@ -439,34 +440,34 @@
     const g = Store.group(sel.gid);
     view.innerHTML = `
       <div class="two-col">
-        <div class="panel"><div class="panel-head"><h3>⬇️ Выгрузка журнала</h3></div>
+        <div class="panel"><div class="panel-head"><h3><span class="ic" style="color:var(--brand);vertical-align:-3px">${I('download', 18)}</span> Выгрузка журнала</h3></div>
           <div class="panel-body">
             <p class="muted" style="margin-bottom:16px">Текущий журнал будет выгружен в таблицу со студентами, оценками по датам, средним баллом и темами уроков.</p>
             ${selectorBar()}
             <div class="flex wrap">
-              <button class="btn green" id="dlXlsx">📊 Скачать Excel (.xlsx)</button>
-              <button class="btn soft" id="dlCsv">📄 Скачать CSV</button>
+              <button class="btn green" id="dlXlsx">${I('sheet', 16)} Скачать Excel (.xlsx)</button>
+              <button class="btn soft" id="dlCsv">${I('fileText', 16)} Скачать CSV</button>
             </div>
             <hr style="border:none;border-top:1px solid var(--line);margin:20px 0">
             <p class="muted" style="margin-bottom:12px">Прочие выгрузки:</p>
             <div class="flex wrap">
-              <button class="btn teal" id="dlStud">👥 Контингент студентов (Excel)</button>
-              <button class="btn soft" id="dlBackup">💾 Резервная копия (JSON)</button>
+              <button class="btn teal" id="dlStud">${I('users', 16)} Контингент студентов (Excel)</button>
+              <button class="btn soft" id="dlBackup">${I('save', 16)} Резервная копия (JSON)</button>
             </div>
           </div></div>
 
-        <div class="panel"><div class="panel-head"><h3>⬆️ Загрузка журнала</h3></div>
+        <div class="panel"><div class="panel-head"><h3><span class="ic" style="color:var(--brand);vertical-align:-3px">${I('upload', 18)}</span> Загрузка журнала</h3></div>
           <div class="panel-body">
             <p class="muted" style="margin-bottom:14px">Загрузите ранее выгруженный файл (.xlsx или .csv). Оценки сопоставляются со студентами по ФИО и добавляются в выбранную группу/дисциплину.</p>
             <div class="dropzone" id="dz">
-              <div class="big">📂</div>
+              <div class="big">${I('folder', 40)}</div>
               <b>Перетащите файл сюда</b><br><span>или нажмите, чтобы выбрать (.xlsx, .csv)</span>
             </div>
             <input type="file" id="fileInp" accept=".xlsx,.xls,.csv" style="display:none">
             <div class="mt"><span class="badge gray">Цель загрузки:</span> <b id="impTarget">${esc(g.name)} — ${esc(sel.disc)}</b></div>
             <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
             <p class="muted" style="margin-bottom:10px">Восстановление из резервной копии:</p>
-            <button class="btn soft sm" id="restoreBtn">↩️ Загрузить JSON-копию</button>
+            <button class="btn soft sm" id="restoreBtn">${I('rotate', 16)} Загрузить JSON-копию</button>
             <input type="file" id="jsonInp" accept=".json" style="display:none">
           </div></div>
       </div>
@@ -505,11 +506,11 @@
 
   function handleImport(file) {
     IO.importFile(file, sel.gid, sel.disc).then(r => {
-      modal('Импорт завершён ✅', `
+      modal('Импорт завершён', `
         <div class="cards" style="margin:0">
-          ${stat('bg-green', '✅', r.imported, 'Оценок загружено', 'up', 'ok')}
-          ${stat('bg-blue', '👥', r.matched, 'Студентов сопоставлено', 'up', 'из ' + r.students)}
-          ${stat('bg-amber', '📚', r.topics, 'Тем уроков', 'up', 'тем')}
+          ${stat('bg-green', 'check', r.imported, 'Оценок загружено', 'up', 'ok')}
+          ${stat('bg-blue', 'users', r.matched, 'Студентов сопоставлено', 'up', 'из ' + r.students)}
+          ${stat('bg-amber', 'book', r.topics, 'Тем уроков', 'up', 'тем')}
         </div>
         <p class="muted mt">Загружено в: <b>${esc(Store.group(sel.gid).name)} — ${esc(sel.disc)}</b>. Распознано дат: ${r.dates}.</p>`,
         `<button class="btn" onclick="App.closeModal();location.hash='#/journal'">Открыть журнал →</button>`);
@@ -540,7 +541,7 @@
             <div class="kv"><span>Оценок выставлено</span><b>${Store.globalStats().marks}</b></div>
             <hr style="border:none;border-top:1px solid var(--line);margin:16px 0">
             <p class="muted" style="margin-bottom:10px">Опасная зона:</p>
-            <button class="btn soft sm" id="resetBtn" style="color:var(--red)">🗑 Очистить все оценки и темы</button>
+            <button class="btn soft sm" id="resetBtn" style="color:var(--c-red)">${I('trash', 16)} Очистить все оценки и темы</button>
           </div></div>
       </div>`;
     $('#saveProfile').onclick = () => {

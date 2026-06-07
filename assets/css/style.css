@@ -286,6 +286,15 @@ code{background:var(--bg-soft);border:1px solid var(--line);padding:1px 6px;bord
 .legend b{color:var(--ink)}
 .chip-grade{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;font-weight:800;font-size:13px;background:var(--bg-soft)}
 
+/* SVG-иконки */
+svg.ico{display:block;flex-shrink:0;stroke-width:1.9}
+.ic{display:inline-flex;align-items:center;justify-content:center}
+.btn svg.ico{flex-shrink:0}
+.nav a .ic{width:22px;min-width:22px}
+.empty-state .big svg.ico{margin:0 auto;opacity:.5;stroke-width:1.5}
+.icon-btn svg.ico{stroke-width:1.9}
+.toast .ic{color:#fff}
+
 .muted{color:var(--muted)}
 .right{text-align:right}
 .center{text-align:center}
