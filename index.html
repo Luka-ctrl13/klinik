@@ -14,40 +14,64 @@
 
 <!-- ============ LOGIN ============ -->
 <div id="login">
-  <div class="login-card">
-    <div class="login-logo">
-      <div class="mark">Б</div>
-      <div><b>BilimJournal</b><span>Электронный журнал преподавателя</span></div>
+  <div class="login-split">
+    <!-- левая колонка: бренд + возможности -->
+    <div class="login-left">
+      <div class="ll-logo">
+        <img id="brandLogo" src="assets/img/logo.png" alt="Логотип колледжа"
+             onerror="this.style.display='none';document.getElementById('crestFallback').style.display='grid';">
+        <div id="crestFallback" class="crest" style="display:none"></div>
+      </div>
+      <h1 class="ll-title">Учебный<br>портал</h1>
+      <p class="ll-sub">Система управления<br>учебным процессом колледжа</p>
+      <ul class="ll-features">
+        <li><span class="ic" data-icon="chart" data-size="18"></span> Успеваемость и оценки</li>
+        <li><span class="ic" data-icon="table" data-size="18"></span> Расписание занятий</li>
+        <li><span class="ic" data-icon="book" data-size="18"></span> Объявления и новости</li>
+        <li><span class="ic" data-icon="check" data-size="18"></span> Контроль посещаемости</li>
+      </ul>
     </div>
-    <h1>Вход в систему</h1>
-    <p class="sub">Войдите, чтобы продолжить работу с журналом</p>
-    <form id="loginForm">
-      <div class="field">
-        <label>ФИО преподавателя</label>
-        <input id="liName" type="text" placeholder="Иванов Иван Иванович" value="Преподаватель" autocomplete="name">
+
+    <!-- правая колонка: форма -->
+    <div class="login-right">
+      <div class="login-form-card">
+        <h2>Вход в систему</h2>
+        <p class="sub">Введите ваш email и пароль</p>
+        <form id="loginForm">
+          <div class="field">
+            <label>Email</label>
+            <div class="input-icon">
+              <span class="lead" data-icon="mail" data-size="17"></span>
+              <input id="liEmail" type="email" placeholder="example@college.kz" value="example@college.kz" autocomplete="username">
+            </div>
+          </div>
+          <div class="field">
+            <label>Пароль</label>
+            <div class="input-icon">
+              <span class="lead" data-icon="lock" data-size="17"></span>
+              <input id="liPass" type="password" placeholder="••••••••" value="1234" autocomplete="current-password">
+              <button type="button" class="eye" id="togglePass" data-icon="eye" data-size="18" title="Показать пароль"></button>
+            </div>
+          </div>
+          <div class="forgot"><a href="#" id="forgotLink">Забыли пароль?</a></div>
+          <button class="btn block" type="submit">Войти</button>
+        </form>
+        <p class="login-foot">Система управления учебным процессом</p>
+        <div class="login-hint">Демо-доступ: любой email · пароль <b>1234</b></div>
       </div>
-      <div class="field">
-        <label>Логин</label>
-        <input id="liLogin" type="text" placeholder="teacher" value="teacher" autocomplete="username">
-      </div>
-      <div class="field">
-        <label>Пароль</label>
-        <input id="liPass" type="password" placeholder="••••••" value="1234" autocomplete="current-password">
-      </div>
-      <button class="btn block" type="submit">Войти в журнал →</button>
-    </form>
-    <div class="login-hint">Демо-доступ: логин <b>teacher</b> / пароль <b>1234</b></div>
+    </div>
   </div>
 </div>
 
 <!-- ============ APP ============ -->
 <div id="app">
 <div class="layout">
+  <div class="sidebar-backdrop" id="sbBackdrop"></div>
   <!-- SIDEBAR (компактный, разворачивается при наведении) -->
   <aside class="sidebar" id="sidebar">
     <div class="brand">
-      <div class="mark">Б</div>
-      <div class="brand-text"><b>BilimJournal</b><span>колледж · 2025–2026</span></div>
+      <div class="mark">А</div>
+      <div class="brand-text"><b>Учебный портал</b><span>АВПК · 2025–2026</span></div>
     </div>
     <nav class="nav" id="nav">
       <div class="group-label">Основное</div>

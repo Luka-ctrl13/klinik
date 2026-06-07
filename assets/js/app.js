@@ -63,7 +63,11 @@
     view.innerHTML = '';
     r.render();
     view.scrollTop = 0;
+    closeSidebar();
+  }
+  function closeSidebar() {
     $('#sidebar').classList.remove('open');
+    $('#sbBackdrop') && $('#sbBackdrop').classList.remove('show');
   }
 
   // ============ DASHBOARD ============
@@ -571,14 +575,28 @@
 
     $('#loginForm').addEventListener('submit', e => {
       e.preventDefault();
-      const login = $('#liLogin').value.trim(), pass = $('#liPass').value;
-      if (login === 'teacher' && pass === '1234') {
-        Store.setUser({ name: $('#liName').value.trim() || 'Преподаватель', login });
-        showApp(); toast('Добро пожаловать!', 'ok');
-      } else { toast('Неверный логин или пароль', 'err'); }
+      const email = $('#liEmail').value.trim(), pass = $('#liPass').value;
+      if (!/.+@.+\..+/.test(email)) { toast('Введите корректный email', 'err'); return; }
+      if (pass !== '1234') { toast('Неверный пароль (демо: 1234)', 'err'); return; }
+      Store.setUser({ name: 'Преподаватель', email, login: email });
+      showApp(); toast('Добро пожаловать!', 'ok');
+    });
+    // показать/скрыть пароль
+    $('#togglePass') && $('#togglePass').addEventListener('click', () => {
+      const inp = $('#liPass'), show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password';
+      $('#togglePass').innerHTML = I(show ? 'eyeOff' : 'eye', 18);
+    });
+    $('#forgotLink') && $('#forgotLink').addEventListener('click', ev => {
+      ev.preventDefault();
+      toast('Для восстановления доступа обратитесь к администратору колледжа', 'info');
     });
     $('#logoutBtn').addEventListener('click', () => { Store.setUser(null); location.reload(); });
-    $('#hamb').addEventListener('click', () => $('#sidebar').classList.toggle('open'));
+    $('#hamb').addEventListener('click', () => {
+      const open = $('#sidebar').classList.toggle('open');
+      $('#sbBackdrop').classList.toggle('show', open);
+    });
+    $('#sbBackdrop').addEventListener('click', closeSidebar);
     $('#quickExport').addEventListener('click', () => { ensureSel(); toast('Выгружено: ' + IO.exportXLSX(sel.gid, sel.disc), 'ok'); });
 
     // глобальный поиск -> студенты

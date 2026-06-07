@@ -1,10 +1,13 @@
 /* ===== Электронный журнал преподавателя — Светлый минимализм / Emerald ===== */
 :root{
-  --brand:#10b981;          /* изумрудный */
-  --brand-dark:#059669;
-  --brand-darker:#047857;
-  --brand-soft:#ecfdf5;
-  --brand-soft2:#d1fae5;
+  --brand:#2456d6;          /* синий колледжа (АВПК) */
+  --brand-dark:#1c43ab;
+  --brand-darker:#15327f;
+  --brand-soft:#eef3ff;
+  --brand-soft2:#dbe6ff;
+  --navy:#14245e;           /* тёмно-синий (герб) */
+  --gold:#e0a82e;           /* золотой акцент (герб) */
+  --gold-soft:#fbf3df;
   --ink:#111827;
   --ink-soft:#374151;
   --muted:#6b7280;
@@ -42,27 +45,54 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 ::-webkit-scrollbar-thumb:hover{background:#d1d5db}
 ::-webkit-scrollbar-track{background:transparent}
 
-/* ---------- LOGIN ---------- */
+/* ---------- LOGIN (двухколоночный, цвета колледжа) ---------- */
 #login{
-  position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
-  background:var(--bg-soft);padding:20px;
+  position:fixed;inset:0;z-index:100;display:flex;align-items:stretch;
+  background:var(--bg-soft);overflow:auto;
 }
-#login::before{content:"";position:absolute;inset:0;
+#login::before{content:"";position:absolute;inset:0;pointer-events:none;
   background:
-    radial-gradient(900px 500px at 85% -10%, var(--brand-soft) 0%, transparent 55%),
-    radial-gradient(700px 500px at -10% 110%, #eff6ff 0%, transparent 55%);}
-.login-card{
-  position:relative;width:100%;max-width:400px;background:#fff;border-radius:20px;padding:40px 36px;
-  border:1px solid var(--line);box-shadow:var(--shadow);animation:rise .45s cubic-bezier(.2,.8,.2,1);
-}
+    radial-gradient(820px 520px at 12% -8%, rgba(36,86,214,.10) 0%, transparent 55%),
+    radial-gradient(700px 520px at 105% 60%, rgba(224,168,46,.10) 0%, transparent 55%),
+    radial-gradient(600px 600px at 60% 115%, rgba(36,86,214,.07) 0%, transparent 55%);}
+.login-split{position:relative;display:grid;grid-template-columns:1.05fr 1fr;width:100%;min-height:100vh}
+
+/* левая колонка */
+.login-left{display:flex;flex-direction:column;justify-content:center;padding:64px 7vw;gap:6px}
+.ll-logo{margin-bottom:26px}
+.ll-logo img{width:84px;height:84px;object-fit:contain;border-radius:50%;
+  box-shadow:0 10px 30px rgba(20,36,94,.18);background:#fff}
+.crest{width:84px;height:84px;border-radius:50%;display:grid;
+  background:radial-gradient(circle at 50% 50%, #1c43ab 0 58%, var(--navy) 59%);
+  place-items:center;position:relative;box-shadow:0 10px 30px rgba(20,36,94,.18);
+  border:3px solid var(--gold)}
+.crest::before{content:"АВПК";font-size:19px;font-weight:800;color:#fff;letter-spacing:.5px}
+.crest::after{content:"1965";position:absolute;bottom:13px;font-size:8px;font-weight:800;color:var(--gold);letter-spacing:1px}
+.ll-title{font-size:46px;line-height:1.04;font-weight:800;letter-spacing:-1.5px;color:var(--navy);margin-bottom:14px}
+.ll-sub{font-size:14.5px;color:var(--muted);margin-bottom:30px;line-height:1.5}
+.ll-features{list-style:none;display:flex;flex-direction:column;gap:16px;max-width:320px}
+.ll-features li{display:flex;align-items:center;gap:13px;font-size:14px;color:var(--ink-soft);font-weight:500}
+.ll-features li .ic{width:38px;height:38px;border-radius:11px;background:#fff;border:1px solid var(--line);
+  color:var(--brand);flex-shrink:0;box-shadow:var(--shadow-sm,0 2px 6px rgba(20,36,94,.06))}
+
+/* правая колонка */
+.login-right{display:flex;align-items:center;justify-content:center;padding:40px 6vw}
+.login-form-card{width:100%;max-width:380px;background:rgba(255,255,255,.7);backdrop-filter:blur(8px);
+  border:1px solid var(--line-strong);border-radius:18px;padding:38px 34px;
+  box-shadow:0 20px 50px rgba(20,36,94,.10);animation:rise .45s cubic-bezier(.2,.8,.2,1)}
 @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:26px}
-.login-logo .mark{width:44px;height:44px;border-radius:13px;background:var(--brand);
-  display:grid;place-items:center;color:#fff;font-weight:800;font-size:21px;box-shadow:0 6px 16px rgba(16,185,129,.3)}
-.login-logo b{font-size:18px;letter-spacing:-.4px;display:block}
-.login-logo span{display:block;font-size:11.5px;color:var(--muted);font-weight:500}
-.login-card h1{font-size:23px;margin:0 0 4px;letter-spacing:-.6px}
-.login-card p.sub{color:var(--muted);margin-bottom:26px;font-size:13.5px}
+.login-form-card h2{font-size:24px;letter-spacing:-.6px;color:var(--navy);text-align:center;margin-bottom:5px}
+.login-form-card p.sub{color:var(--muted);text-align:center;margin-bottom:26px;font-size:13.5px}
+.input-icon{position:relative;display:flex;align-items:center}
+.input-icon .lead{position:absolute;left:13px;color:var(--faint);display:flex;pointer-events:none}
+.input-icon input{padding-left:42px}
+.input-icon .eye{position:absolute;right:10px;width:30px;height:30px;border-radius:8px;color:var(--faint);
+  display:grid;place-items:center;transition:.13s}
+.input-icon .eye:hover{color:var(--brand);background:var(--brand-soft)}
+.forgot{text-align:right;margin:-4px 0 18px}
+.forgot a{font-size:12.5px;color:var(--brand);font-weight:600}
+.forgot a:hover{text-decoration:underline}
+.login-foot{text-align:center;color:var(--faint);font-size:12px;margin-top:18px}
 .field{margin-bottom:15px}
 .field label{display:block;font-size:12.5px;color:var(--ink-soft);margin-bottom:7px;font-weight:600}
 .field input,.field select{
@@ -78,7 +108,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 }
 .btn:hover{background:var(--brand-dark)}
 .btn:active{transform:scale(.99)}
-.btn.block{width:100%;padding:13px;box-shadow:0 6px 16px rgba(16,185,129,.25)}
+.btn.block{width:100%;padding:13px;box-shadow:0 6px 16px rgba(36,86,214,.28)}
 .btn.ghost{background:var(--brand-soft);color:var(--brand-dark)}
 .btn.ghost:hover{background:var(--brand-soft2)}
 .btn.soft{background:#f3f4f6;color:var(--ink-soft)}
@@ -103,7 +133,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .sidebar:hover{width:var(--sidebar-w-open);box-shadow:var(--shadow-hover)}
 .sidebar .brand{display:flex;align-items:center;gap:12px;padding:18px;height:64px;flex-shrink:0}
 .sidebar .brand .mark{width:38px;height:38px;border-radius:11px;background:var(--brand);
-  display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px;flex-shrink:0;box-shadow:0 4px 12px rgba(16,185,129,.3)}
+  display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px;flex-shrink:0;box-shadow:0 4px 12px rgba(36,86,214,.3)}
 .sidebar .brand b{color:var(--ink);font-size:15.5px;letter-spacing:-.4px;white-space:nowrap}
 .sidebar .brand span{font-size:10.5px;color:var(--faint);display:block;white-space:nowrap}
 .brand-text,.user-meta,.nav .lbl,.nav .group-label,.logout .lbl{
@@ -305,13 +335,92 @@ h2.sec{font-size:20px;margin-bottom:4px}
 p.secsub{color:var(--muted);margin-bottom:20px}
 hr{border:none;border-top:1px solid var(--line)}
 
-/* mobile */
+/* ---------- АДАПТИВ ---------- */
+/* логин: на узких экранах в одну колонку */
+@media(max-width:920px){
+  #login{align-items:flex-start}
+  .login-split{grid-template-columns:1fr;min-height:100vh}
+  .login-left{padding:46px 24px 8px;text-align:center;align-items:center}
+  .ll-title{font-size:36px}
+  .ll-sub{margin-bottom:8px}
+  .ll-features{display:none}
+  .login-right{padding:18px 18px 48px;align-items:flex-start}
+}
+@media(max-width:600px){
+  .ll-logo img,.crest{width:68px;height:68px}
+  .ll-title{font-size:28px}
+  .login-form-card{padding:26px 20px}
+  .login-form-card h2{font-size:21px}
+}
+
 .hamb{display:none}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:55;
+  opacity:0;transition:opacity .25s;backdrop-filter:blur(2px)}
+.sidebar-backdrop.show{display:block;opacity:1}
+
+/* планшеты */
+@media(max-width:1100px){
+  .content{padding:22px 20px 56px}
+  .search{width:220px}
+}
+
+/* мобильные: сайдбар становится выезжающим меню */
 @media(max-width:860px){
-  .sidebar{position:fixed;left:calc(-1 * var(--sidebar-w-open));width:var(--sidebar-w-open);transition:left .25s;z-index:60}
+  .sidebar{position:fixed;left:calc(-1 * var(--sidebar-w-open) - 10px);width:var(--sidebar-w-open);
+    transition:left .25s cubic-bezier(.2,.8,.2,1);z-index:60;box-shadow:var(--shadow-hover)}
+  .sidebar:hover{width:var(--sidebar-w-open);box-shadow:var(--shadow-hover)}
   .sidebar.open{left:0}
   .sidebar .brand-text,.sidebar .user-meta,.sidebar .nav .lbl,.sidebar .nav .group-label,.sidebar .logout .lbl{opacity:1}
-  .search{display:none}
   .hamb{display:grid}
+  .topbar{padding:0 16px;gap:10px}
+  .search{width:auto;flex:1;min-width:0}
   .content{padding:18px 16px 50px}
+  .two-col{grid-template-columns:1fr}
+  .toolbar select,.toolbar input{min-width:0;width:100%}
+  .toolbar .ctl{flex:1 1 160px}
+}
+
+/* телефоны */
+@media(max-width:600px){
+  body{font-size:13.5px}
+  .topbar{height:58px}
+  .topbar .page-title{font-size:15px}
+  .topbar .page-title small{display:none}
+  .search{display:none}              /* поиск прячем, остаётся в разделе «Контингент» */
+  .content{padding:14px 12px 48px}
+  .cards{grid-template-columns:1fr 1fr;gap:11px}
+  .stat{padding:15px}
+  .stat .ic{width:36px;height:36px;margin-bottom:11px}
+  .stat .big{font-size:22px}
+  .stat .lbl{font-size:11.5px}
+  .stat .trend{top:13px;right:13px;font-size:10.5px;padding:2px 7px}
+  .panel-head{padding:14px}
+  .panel-body{padding:14px}
+  .gcards{grid-template-columns:1fr}
+  .toolbar{gap:10px}
+  .toolbar .ctl{flex:1 1 100%}
+  .col-name{min-width:150px;max-width:150px}
+  table.journal td.col-name{padding:7px 9px;font-size:12px}
+  .avatar-sm{margin-right:7px}
+  .dtable th,.dtable td{padding:9px 10px}
+  .modal{border-radius:14px}
+  .modal-body{padding:16px}
+  .modal-head,.modal-foot{padding:14px 16px}
+  .modal-foot{flex-wrap:wrap}
+  .modal-foot .btn{flex:1}
+  #toast{left:12px;right:12px;bottom:12px}
+  .toast{max-width:none}
+  .legend{display:none}
+  .login-card{padding:30px 22px}
+  .lesson .ldate{width:48px}
+}
+
+/* очень узкие экраны */
+@media(max-width:380px){
+  .cards{grid-template-columns:1fr}
+}
+
+/* таблицы со скроллом по горизонтали на узких экранах */
+@media(max-width:860px){
+  .panel-body>.dtable{display:block;overflow-x:auto;white-space:nowrap}
 }
