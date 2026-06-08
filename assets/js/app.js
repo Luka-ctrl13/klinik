@@ -689,6 +689,12 @@
 
   function bootstrap() {
     Store.init();
+    // цвета графиков под тёмную тему
+    if (window.Chart) {
+      Chart.defaults.color = '#9bb0d8';
+      Chart.defaults.borderColor = 'rgba(176,197,240,.10)';
+      Chart.defaults.font.family = "'Inter','Segoe UI',sans-serif";
+    }
     // авто-вход, если уже логинились
     if (Store.user()) showApp();
 
