@@ -16,6 +16,7 @@
     t.className = 'toast ' + type;
     t.innerHTML = `<span class="ic">${I(type === 'ok' ? 'check' : type === 'err' ? 'alert' : 'info', 18)}</span>${esc(msg)}`;
     $('#toast').appendChild(t);
+    if (window.I18n) I18n.apply(t);
     setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(40px)'; setTimeout(() => t.remove(), 300); }, 3200);
   }
   function destroyCharts() { charts.forEach(c => { try { c.destroy(); } catch (e) {} }); charts = []; }
@@ -27,6 +28,7 @@
       <div class="modal-head"><h3>${title}</h3><button class="icon-btn" onclick="App.closeModal()">${I('x', 18)}</button></div>
       <div class="modal-body">${body}</div>
       ${foot ? `<div class="modal-foot">${foot}</div>` : ''}`;
+    if (window.I18n) I18n.apply($('#modal'));
     $('#modalBg').classList.add('show');
   }
   const closeModal = () => $('#modalBg').classList.remove('show');
@@ -64,6 +66,7 @@
     r.render();
     view.scrollTop = 0;
     closeSidebar();
+    if (window.I18n) I18n.apply(document.body);
   }
   function closeSidebar() {
     $('#sidebar').classList.remove('open');
@@ -722,11 +725,22 @@
       $('#sbBackdrop').classList.toggle('show', open);
     });
     $('#sbBackdrop').addEventListener('click', closeSidebar);
-    // переключатель языков (визуальный)
-    $('#langs') && $('#langs').addEventListener('click', e => {
-      if (e.target.tagName !== 'BUTTON') return;
-      $('#langs').querySelectorAll('button').forEach(b => b.classList.toggle('active', b === e.target));
-    });
+    // переключатель языков (RU / KZ / EN) — реальная смена языка
+    const LMAP = { RU: 'ru', KZ: 'kk', EN: 'en' };
+    if ($('#langs')) {
+      // отметить активный по сохранённому языку
+      const cur = window.I18n ? I18n.getLang() : 'ru';
+      $('#langs').querySelectorAll('button').forEach(b => b.classList.toggle('active', LMAP[b.textContent.trim()] === cur));
+      $('#langs').addEventListener('click', e => {
+        if (e.target.tagName !== 'BUTTON' || !window.I18n) return;
+        const code = LMAP[e.target.textContent.trim()] || 'ru';
+        I18n.setLang(code);
+        $('#langs').querySelectorAll('button').forEach(b => b.classList.toggle('active', b === e.target));
+        router();                 // перерисовать текущий экран
+        I18n.apply(document.body); // и весь каркас
+        document.documentElement.lang = code;
+      });
+    }
     $('#quickExport').addEventListener('click', () => { ensureSel(); toast('Выгружено: ' + IO.exportXLSX(sel.gid, sel.disc), 'ok'); });
 
     // глобальный поиск -> студенты
@@ -753,6 +767,9 @@
     document.addEventListener('mouseout', e => {
       if (e.target.closest && e.target.closest('.sname')) tip.classList.remove('show');
     });
+
+    // первоначальный перевод интерфейса (вход + каркас)
+    if (window.I18n) { document.documentElement.lang = I18n.getLang(); I18n.apply(document.body); }
   }
 
   // публичный API для inline-обработчиков
