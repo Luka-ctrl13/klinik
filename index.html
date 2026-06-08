@@ -6,7 +6,7 @@
 <title>BilimJournal — Электронный журнал преподавателя</title>
 <meta name="description" content="Электронный журнал преподавателя: оценки, посещаемость, КТП, аналитика, импорт и экспорт данных.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23091433'/><text x='50' y='70' font-size='54' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>А</text></svg>">
 </head>
@@ -22,8 +22,9 @@
              onerror="this.style.display='none';document.getElementById('crestFallback').style.display='grid';">
         <div id="crestFallback" class="crest" style="display:none"></div>
       </div>
+      <div class="ll-kicker">Актюбинский высший политехнический колледж</div>
       <h1 class="ll-title">Учебный<br>портал</h1>
-      <p class="ll-sub">Система управления<br>учебным процессом колледжа</p>
+      <p class="ll-sub">Электронный журнал преподавателя — единая система управления учебным процессом колледжа.</p>
       <ul class="ll-features">
         <li><span class="ic" data-icon="chart" data-size="18"></span> Успеваемость и оценки</li>
         <li><span class="ic" data-icon="table" data-size="18"></span> Расписание занятий</li>
@@ -105,6 +106,9 @@
       <div class="search">
         <span class="ic" data-icon="search" data-size="17"></span>
         <input id="globalSearch" type="text" placeholder="Поиск студента по ФИО / ИИН...">
+      </div>
+      <div class="langs" id="langs">
+        <button class="active">RU</button><button>KZ</button><button>EN</button>
       </div>
       <button class="icon-btn" id="quickExport" title="Быстрый экспорт текущего журнала"><span data-icon="download" data-size="18"></span></button>
     </div>

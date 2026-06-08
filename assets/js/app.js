@@ -132,7 +132,7 @@
     const data = gs.map(g => { const s = Store.groupStats(g.id, g.disciplines[0]); return s ? +s.avg.toFixed(2) : 0; });
     charts.push(new Chart($('#chDash'), {
       type: 'bar',
-      data: { labels, datasets: [{ label: 'Средний балл', data, backgroundColor: '#10b981', borderRadius: 6, maxBarThickness: 34 }] },
+      data: { labels, datasets: [{ label: 'Средний балл', data, backgroundColor: '#1f4fd0', borderRadius: 5, maxBarThickness: 34 }] },
       options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 5 } }, responsive: true }
     }));
     // распределение оценок (быстрый подсчёт по сохранённым оценкам)
@@ -140,7 +140,7 @@
     charts.push(new Chart($('#chPie'), {
       type: 'doughnut',
       data: { labels: ['Отлично (5)', 'Хорошо (4)', 'Удовл. (3)', 'Неуд. (2)'],
-        datasets: [{ data: [dist[5], dist[4], dist[3], dist[2]], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'], borderWidth: 0 }] },
+        datasets: [{ data: [dist[5], dist[4], dist[3], dist[2]], backgroundColor: ['#138a5b', '#1f4fd0', '#bd7a14', '#cf3b36'], borderWidth: 0 }] },
       options: { plugins: { legend: { position: 'bottom' } }, cutout: '62%' }
     }));
   }
@@ -480,8 +480,8 @@
     // показатели — прогресс-бары
     const bar = (lbl, val, color) => `<div class="kv"><span>${lbl}</span><b>${val.toFixed(0)}%</b></div>
       <div class="progress" style="margin-bottom:16px"><i style="width:${Math.min(val,100)}%;background:${color}"></i></div>`;
-    $('#bars').innerHTML = bar('Успеваемость', s.success, '#10b981') + bar('Качество знаний', s.quality, '#f59e0b')
-      + bar('Посещаемость', s.attendance, '#14b8a6') + bar('Заполнение журнала', Math.min(s.count / (g.students.length * Store.datesFor(sel.gid, sel.disc).length || 1) * 100, 100), '#3b82f6');
+    $('#bars').innerHTML = bar('Успеваемость', s.success, '#138a5b') + bar('Качество знаний', s.quality, '#bd7a14')
+      + bar('Посещаемость', s.attendance, '#0e8f86') + bar('Заполнение журнала', Math.min(s.count / (g.students.length * Store.datesFor(sel.gid, sel.disc).length || 1) * 100, 100), '#1f4fd0');
 
     // рейтинг студентов
     const ranked = g.students.map((st, si) => ({ fio: st.fio, avg: Store.studentAvg(sel.gid, sel.disc, si) }))
@@ -498,7 +498,7 @@
       const labels = g.disciplines, data = labels.map(d => +(Store.groupStats(sel.gid, d)?.quality || 0).toFixed(1));
       charts.push(new Chart($('#chQ'), {
         type: 'bar',
-        data: { labels: labels.map(l => l.length > 18 ? l.slice(0, 16) + '…' : l), datasets: [{ data, backgroundColor: '#f59e0b', borderRadius: 6 }] },
+        data: { labels: labels.map(l => l.length > 18 ? l.slice(0, 16) + '…' : l), datasets: [{ data, backgroundColor: '#1f4fd0', borderRadius: 5 }] },
         options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { max: 100 } } }
       }));
     }
@@ -689,10 +689,10 @@
 
   function bootstrap() {
     Store.init();
-    // цвета графиков под тёмную тему
+    // цвета графиков под светлую тему
     if (window.Chart) {
-      Chart.defaults.color = '#9bb0d8';
-      Chart.defaults.borderColor = 'rgba(176,197,240,.10)';
+      Chart.defaults.color = '#727c93';
+      Chart.defaults.borderColor = '#e3e7f0';
       Chart.defaults.font.family = "'Inter','Segoe UI',sans-serif";
     }
     // авто-вход, если уже логинились
@@ -722,6 +722,11 @@
       $('#sbBackdrop').classList.toggle('show', open);
     });
     $('#sbBackdrop').addEventListener('click', closeSidebar);
+    // переключатель языков (визуальный)
+    $('#langs') && $('#langs').addEventListener('click', e => {
+      if (e.target.tagName !== 'BUTTON') return;
+      $('#langs').querySelectorAll('button').forEach(b => b.classList.toggle('active', b === e.target));
+    });
     $('#quickExport').addEventListener('click', () => { ensureSel(); toast('Выгружено: ' + IO.exportXLSX(sel.gid, sel.disc), 'ok'); });
 
     // глобальный поиск -> студенты
