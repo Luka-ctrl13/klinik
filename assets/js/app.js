@@ -72,6 +72,7 @@
 
   // ============ DASHBOARD ============
   function renderDashboard() {
+    ensureAllGrades();
     const s = Store.globalStats();
     view.innerHTML = `
       <div class="cards">
@@ -134,10 +135,8 @@
       data: { labels, datasets: [{ label: 'Средний балл', data, backgroundColor: '#10b981', borderRadius: 6, maxBarThickness: 34 }] },
       options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 5 } }, responsive: true }
     }));
-    // распределение оценок
-    const dist = { 5: 0, 4: 0, 3: 0, 2: 0 };
-    Store.groups().forEach(g => g.disciplines.forEach(d => g.students.forEach((_, si) =>
-      Store.datesFor(g.id, d).forEach(dt => { const v = Store.getMark(g.id, d, dt, si); if (dist[v] != null) dist[v]++; }))));
+    // распределение оценок (быстрый подсчёт по сохранённым оценкам)
+    const dist = Store.markDistribution();
     charts.push(new Chart($('#chPie'), {
       type: 'doughnut',
       data: { labels: ['Отлично (5)', 'Хорошо (4)', 'Удовл. (3)', 'Неуд. (2)'],
@@ -166,27 +165,43 @@
     $('#selDisc').onchange = e => { sel.disc = e.target.value; cb(); };
   }
 
+  // авто-заполнение оценками включено, пока его явно не отключили
+  const autoFillOn = () => Store.settings().autoFillGrades !== false;
+
   // генерация реалистичных оценок для группы/дисциплины (демо-заполнение)
   function genGrades(gid, disc) {
     const g = Store.group(gid);
     const dates = Store.datesFor(gid, disc);
-    g.students.forEach((_, si) => {
-      const ability = 0.45 + Math.random() * 0.55; // «уровень» студента (стабильный по строке)
-      dates.forEach(d => {
-        const rnd = Math.random();
-        if (rnd < 0.05) { Store.setMark(gid, disc, d, si, 'Н'); return; } // ~5% отсутствий
-        if (rnd < 0.22) return;                                          // ~17% ячеек пустые
-        const x = ability * 0.7 + Math.random() * 0.3;
-        const v = x > 0.82 ? '5' : x > 0.55 ? '4' : x > 0.3 ? '3' : '2';
-        Store.setMark(gid, disc, d, si, v);
+    Store.batch(() => {
+      g.students.forEach((_, si) => {
+        const ability = 0.45 + Math.random() * 0.55; // «уровень» студента (стабильный по строке)
+        dates.forEach(d => {
+          const rnd = Math.random();
+          if (rnd < 0.05) { Store.setMark(gid, disc, d, si, 'Н'); return; } // ~5% отсутствий
+          if (rnd < 0.22) return;                                          // ~17% ячеек пустые
+          const x = ability * 0.7 + Math.random() * 0.3;
+          const v = x > 0.82 ? '5' : x > 0.55 ? '4' : x > 0.3 ? '3' : '2';
+          Store.setMark(gid, disc, d, si, v);
+        });
+      });
+    });
+  }
+
+  // предзаполнить первую дисциплину каждой группы (для карточек групп и графиков)
+  function ensureAllGrades() {
+    if (!autoFillOn()) return;
+    Store.batch(() => {
+      Store.groups().forEach(g => {
+        const disc = g.disciplines[0];
+        if (disc && !Store.hasMarks(g.id, disc)) genGrades(g.id, disc);
       });
     });
   }
 
   function renderJournal() {
     ensureSel();
-    // ленивое авто-заполнение оценками (если включено при импорте структуры)
-    if (Store.settings().autoFillGrades && !Store.hasMarks(sel.gid, sel.disc)) genGrades(sel.gid, sel.disc);
+    // ленивое авто-заполнение оценками (включено по умолчанию)
+    if (autoFillOn() && !Store.hasMarks(sel.gid, sel.disc)) genGrades(sel.gid, sel.disc);
     view.innerHTML = `
       ${selectorBar()}
       <div class="panel">
@@ -390,6 +405,7 @@
   // ============ GROUPS ============
   let grpFilter = '', grpFac = '';
   function renderGroups() {
+    ensureAllGrades();
     const all = Store.groups();
     const faculties = [...new Set(all.map(g => g.faculty).filter(Boolean))].sort();
     view.innerHTML = `

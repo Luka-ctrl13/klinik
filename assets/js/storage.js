@@ -58,8 +58,25 @@ const Store = (() => {
   const isCustomGroups = () => !!(state.customGroups && state.customGroups.length);
 
   function save() {
-    const { groups, ...persist } = state; // группы не сохраняем (берём из seed)
-    localStorage.setItem(KEY, JSON.stringify(persist));
+    if (suspend > 0) { dirty = true; return; }   // во время пакетной записи откладываем
+    const { groups, ...persist } = state;          // группы не сохраняем (берём из seed)
+    try {
+      localStorage.setItem(KEY, JSON.stringify(persist));
+    } catch (e) {
+      console.warn('Хранилище переполнено — данные не сохранены полностью', e);
+    }
+  }
+  // пакетная запись: много изменений → одно сохранение в конце
+  let suspend = 0, dirty = false;
+  function batch(fn) {
+    suspend++;
+    try { fn(); } finally { suspend--; if (suspend === 0 && dirty) { dirty = false; save(); } }
+  }
+  // быстрое распределение оценок (по объекту marks, без обхода всех дат)
+  function markDistribution() {
+    const d = { 5: 0, 4: 0, 3: 0, 2: 0 };
+    for (const k in state.marks) { const v = state.marks[k]; if (d[v] != null) d[v]++; }
+    return d;
   }
 
   // ---- группы / дисциплины / студенты ----
@@ -180,6 +197,7 @@ const Store = (() => {
     init, save, groups, group, datesFor, addDate, removeDate,
     getMark, setMark, hasMarks, getTopic, setTopic, studentAvg, groupStats,
     globalStats, setUser, user, setSetting, settings, resetAll,
-    exportState, importState, fmt, setGroups, resetGroups, isCustomGroups
+    exportState, importState, fmt, setGroups, resetGroups, isCustomGroups,
+    batch, markDistribution
   };
 })();
