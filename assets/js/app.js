@@ -245,7 +245,7 @@
     g.students.forEach((st, si) => {
       const avg = Store.studentAvg(sel.gid, sel.disc, si);
       html += `<tr><td class="col-num">${si + 1}</td>
-        <td class="col-name"><div class="namecell"><span class="avatar-sm">${esc(initials(st.fio))}</span><span class="sname" title="${esc(st.fio)}">${esc(st.fio)}</span></div></td>`;
+        <td class="col-name"><div class="namecell"><span class="avatar-sm">${esc(initials(st.fio))}</span><span class="sname" data-full="${esc(st.fio)}">${esc(st.fio)}</span></div></td>`;
       dates.forEach(d => {
         const v = Store.getMark(sel.gid, sel.disc, d, si);
         const cls = v === 'Н' || v === 'н' ? 'att' : (v ? 'm' + v : '');
@@ -724,6 +724,24 @@
     });
 
     window.addEventListener('hashchange', router);
+
+    // всплывающая подсказка с полным ФИО при наведении
+    const tip = document.createElement('div');
+    tip.className = 'tip'; document.body.appendChild(tip);
+    document.addEventListener('mouseover', e => {
+      const el = e.target.closest && e.target.closest('.sname');
+      if (!el || !el.dataset.full) { tip.classList.remove('show'); return; }
+      tip.textContent = el.dataset.full;
+      tip.classList.add('show');
+      const r = el.getBoundingClientRect();
+      let left = r.left;
+      if (left + tip.offsetWidth > window.innerWidth - 8) left = window.innerWidth - tip.offsetWidth - 8;
+      tip.style.left = Math.max(8, left) + 'px';
+      tip.style.top = (r.top - 6) + 'px';
+    });
+    document.addEventListener('mouseout', e => {
+      if (e.target.closest && e.target.closest('.sname')) tip.classList.remove('show');
+    });
   }
 
   // публичный API для inline-обработчиков

@@ -235,7 +235,13 @@ thead .col-name{z-index:8;background:var(--bg-soft)!important}
 table.journal td.col-name{padding:8px 14px;font-weight:500;border-right:1px solid var(--line-strong)}
 .namecell{display:flex;align-items:center;gap:0;overflow:hidden}
 .namecell .avatar-sm{flex-shrink:0}
-.sname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.sname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;cursor:default}
+/* всплывающая подсказка с полным ФИО */
+.tip{position:fixed;z-index:300;background:var(--ink);color:#fff;padding:7px 11px;border-radius:9px;
+  font-size:12.5px;font-weight:500;white-space:nowrap;pointer-events:none;opacity:0;
+  transform:translateY(-100%);box-shadow:var(--shadow-hover);transition:opacity .12s;
+  max-width:340px;overflow:hidden;text-overflow:ellipsis}
+.tip.show{opacity:1}
 table.journal td.col-num{padding:8px;color:var(--faint);font-weight:500;background:var(--bg-soft)}
 table.journal tbody tr:hover td{background:var(--brand-soft)}
 table.journal tbody tr:hover td.col-name{background:var(--brand-soft)}
