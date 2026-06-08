@@ -84,6 +84,12 @@ const Store = (() => {
   // ---- оценки ----
   const mKey = (gid, disc, date, si) => [gid, disc, date, si].join('|');
   const getMark = (gid, disc, date, si) => state.marks[mKey(gid, disc, date, si)] || '';
+  // есть ли хоть одна оценка по группе/дисциплине
+  function hasMarks(gid, disc) {
+    const pre = gid + '|' + disc + '|';
+    for (const k in state.marks) if (k.startsWith(pre)) return true;
+    return false;
+  }
   function setMark(gid, disc, date, si, val) {
     const k = mKey(gid, disc, date, si);
     if (val === '' || val == null) delete state.marks[k];
@@ -172,7 +178,7 @@ const Store = (() => {
 
   return {
     init, save, groups, group, datesFor, addDate, removeDate,
-    getMark, setMark, getTopic, setTopic, studentAvg, groupStats,
+    getMark, setMark, hasMarks, getTopic, setTopic, studentAvg, groupStats,
     globalStats, setUser, user, setSetting, settings, resetAll,
     exportState, importState, fmt, setGroups, resetGroups, isCustomGroups
   };

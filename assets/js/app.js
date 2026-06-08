@@ -166,8 +166,27 @@
     $('#selDisc').onchange = e => { sel.disc = e.target.value; cb(); };
   }
 
+  // генерация реалистичных оценок для группы/дисциплины (демо-заполнение)
+  function genGrades(gid, disc) {
+    const g = Store.group(gid);
+    const dates = Store.datesFor(gid, disc);
+    g.students.forEach((_, si) => {
+      const ability = 0.45 + Math.random() * 0.55; // «уровень» студента (стабильный по строке)
+      dates.forEach(d => {
+        const rnd = Math.random();
+        if (rnd < 0.05) { Store.setMark(gid, disc, d, si, 'Н'); return; } // ~5% отсутствий
+        if (rnd < 0.22) return;                                          // ~17% ячеек пустые
+        const x = ability * 0.7 + Math.random() * 0.3;
+        const v = x > 0.82 ? '5' : x > 0.55 ? '4' : x > 0.3 ? '3' : '2';
+        Store.setMark(gid, disc, d, si, v);
+      });
+    });
+  }
+
   function renderJournal() {
     ensureSel();
+    // ленивое авто-заполнение оценками (если включено при импорте структуры)
+    if (Store.settings().autoFillGrades && !Store.hasMarks(sel.gid, sel.disc)) genGrades(sel.gid, sel.disc);
     view.innerHTML = `
       ${selectorBar()}
       <div class="panel">
@@ -178,6 +197,7 @@
             <span><b class="chip-grade m3">3</b></span><span><b class="chip-grade m2">2</b></span>
             <span><b class="att">Н</b> — отсутствовал</span>
           </div>
+          <button class="btn ghost sm" id="fillBtn">${I('pencil', 16)} Заполнить оценками</button>
           <button class="btn ghost sm" id="addDateBtn">${I('plus', 16)} Урок</button>
           <button class="btn green sm" id="expXlsx">${I('sheet', 16)} Excel</button>
           <button class="btn soft sm" id="expCsv">${I('fileText', 16)} CSV</button>
@@ -189,6 +209,10 @@
       <p class="muted center" style="margin-top:6px">Введите оценку (2–5) или «Н» (отсутствие). Данные сохраняются автоматически. Клик по дате — удалить урок.</p>`;
     wireSelector(renderJournal);
     drawGrid();
+    $('#fillBtn').onclick = () => {
+      if (Store.hasMarks(sel.gid, sel.disc) && !confirm('В этом журнале уже есть оценки. Перезаполнить новыми?')) return;
+      genGrades(sel.gid, sel.disc); drawGrid(); toast('Журнал заполнен оценками', 'ok');
+    };
     $('#addDateBtn').onclick = addLessonPrompt;
     $('#expXlsx').onclick = () => { const f = IO.exportXLSX(sel.gid, sel.disc); toast('Выгружено: ' + f, 'ok'); };
     $('#expCsv').onclick = () => { const f = IO.exportCSV(sel.gid, sel.disc); toast('Выгружено: ' + f, 'ok'); };
@@ -523,14 +547,18 @@
             ${stat('bg-green', 'users', r.students, 'Студентов', 'up', 'всего')}
             ${stat('bg-amber', 'book', r.disciplines, 'Дисциплин', 'up', 'предметов')}
           </div>
+          <label class="fillopt"><input type="checkbox" id="optFill" checked> Заполнить журнал демонстрационными оценками</label>
           <p class="muted mt" style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--gold);flex-shrink:0">${I('alert', 16)}</span> Текущие группы и введённые оценки будут заменены новой структурой.</p>`,
           `<button class="btn soft" onclick="App.closeModal()">Отмена</button>
            <button class="btn" id="applyStruct">Заполнить журнал</button>`);
         $('#applyStruct').onclick = () => {
+          const withGrades = $('#optFill').checked;
           Store.setGroups(r.groups);
+          Store.setSetting('autoFillGrades', withGrades);
           sel.gid = null; sel.disc = null; ensureSel();
+          if (withGrades) genGrades(sel.gid, sel.disc); // сразу заполнить первый журнал
           closeModal();
-          toast('Журнал заполнен: ' + r.count + ' групп', 'ok');
+          toast('Журнал заполнен: ' + r.count + ' групп' + (withGrades ? ' с оценками' : ''), 'ok');
           location.hash = '#/journal'; router();
         };
         return;

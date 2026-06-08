@@ -325,6 +325,10 @@ svg.ico{display:block;flex-shrink:0;stroke-width:1.9}
 .icon-btn svg.ico{stroke-width:1.9}
 .toast .ic{color:#fff}
 
+.fillopt{display:flex;align-items:center;gap:9px;margin-top:16px;padding:11px 13px;background:var(--brand-soft);
+  border:1px solid var(--brand-soft2);border-radius:11px;font-size:13.5px;font-weight:600;color:var(--brand-darker);cursor:pointer}
+.fillopt input{width:17px;height:17px;accent-color:var(--brand);cursor:pointer}
+
 .muted{color:var(--muted)}
 .right{text-align:right}
 .center{text-align:center}
