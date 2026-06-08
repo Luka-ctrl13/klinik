@@ -233,6 +233,9 @@ table.journal thead th.date-col:hover{background:var(--brand-soft);color:var(--b
 .col-name{position:sticky;left:0;z-index:6;background:#fff;text-align:left!important;min-width:240px;max-width:240px}
 thead .col-name{z-index:8;background:var(--bg-soft)!important}
 table.journal td.col-name{padding:8px 14px;font-weight:500;border-right:1px solid var(--line-strong)}
+.namecell{display:flex;align-items:center;gap:0;overflow:hidden}
+.namecell .avatar-sm{flex-shrink:0}
+.sname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 table.journal td.col-num{padding:8px;color:var(--faint);font-weight:500;background:var(--bg-soft)}
 table.journal tbody tr:hover td{background:var(--brand-soft)}
 table.journal tbody tr:hover td.col-name{background:var(--brand-soft)}

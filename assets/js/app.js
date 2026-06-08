@@ -245,7 +245,7 @@
     g.students.forEach((st, si) => {
       const avg = Store.studentAvg(sel.gid, sel.disc, si);
       html += `<tr><td class="col-num">${si + 1}</td>
-        <td class="col-name"><span class="avatar-sm">${esc(initials(st.fio))}</span>${esc(st.fio)}</td>`;
+        <td class="col-name"><div class="namecell"><span class="avatar-sm">${esc(initials(st.fio))}</span><span class="sname" title="${esc(st.fio)}">${esc(st.fio)}</span></div></td>`;
       dates.forEach(d => {
         const v = Store.getMark(sel.gid, sel.disc, d, si);
         const cls = v === 'Н' || v === 'н' ? 'att' : (v ? 'm' + v : '');
