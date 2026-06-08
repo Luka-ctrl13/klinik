@@ -462,7 +462,7 @@
 
         <div class="panel"><div class="panel-head"><h3><span class="ic" style="color:var(--brand);vertical-align:-3px">${I('upload', 18)}</span> Загрузка журнала</h3></div>
           <div class="panel-body">
-            <p class="muted" style="margin-bottom:14px">Загрузите ранее выгруженный файл (.xlsx или .csv). Оценки сопоставляются со студентами по ФИО и добавляются в выбранную группу/дисциплину.</p>
+            <p class="muted" style="margin-bottom:14px">Загрузите <b>отчёт по журналам</b> (создаст группы и дисциплины) или <b>таблицу с оценками</b> (расставит оценки по ФИО). Формат — .xlsx или .csv.</p>
             <div class="dropzone" id="dz">
               <div class="big">${I('folder', 40)}</div>
               <b>Перетащите файл сюда</b><br><span>или нажмите, чтобы выбрать (.xlsx, .csv)</span>
@@ -475,10 +475,14 @@
             <input type="file" id="jsonInp" accept=".json" style="display:none">
           </div></div>
       </div>
-      <div class="panel"><div class="panel-head"><h3>Формат таблицы журнала</h3></div>
+      <div class="panel"><div class="panel-head"><h3>Какие файлы можно загружать</h3></div>
         <div class="panel-body">
-          <p class="muted">Файл должен содержать строку заголовка: <code>№ | ФИО студента | даты (01.09, 02.09, …) | Средний балл</code>.
-          Дополнительная строка <b>«Тема урока →»</b> импортирует темы. Оценки: 2–5, отсутствие — «Н».</p>
+          <p class="muted" style="margin-bottom:10px"><b>1. Отчёт по электронным журналам</b> (как в BilimClass) — со столбцами
+          <code>Группа</code>, <code>Дисциплина</code>, <code>Количество обучающихся</code>.
+          Приложение само создаст все группы, дисциплины и списки студентов — журнал заполнится автоматически.</p>
+          <p class="muted"><b>2. Таблица журнала с оценками</b> — строка заголовка
+          <code>№ | ФИО студента | даты (01.09, …) | Средний балл</code>. Оценки (2–5 или «Н») расставятся
+          по студентам выбранной группы. Строка <b>«Тема урока →»</b> загружает темы.</p>
         </div></div>`;
     wireSelector(() => { const g2 = Store.group(sel.gid); $('#impTarget').textContent = `${g2.name} — ${sel.disc}`; });
 
@@ -510,6 +514,27 @@
 
   function handleImport(file) {
     IO.importFile(file, sel.gid, sel.disc).then(r => {
+      // --- загрузка структуры журнала (группы/дисциплины/студенты) ---
+      if (r.kind === 'structure') {
+        modal('Загрузить структуру журнала?', `
+          <p class="muted">В файле распознан отчёт по электронным журналам. Будет создана структура:</p>
+          <div class="cards" style="margin:14px 0 0">
+            ${stat('bg-blue', 'school', r.count, 'Учебных групп', 'up', 'групп')}
+            ${stat('bg-green', 'users', r.students, 'Студентов', 'up', 'всего')}
+            ${stat('bg-amber', 'book', r.disciplines, 'Дисциплин', 'up', 'предметов')}
+          </div>
+          <p class="muted mt" style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--gold);flex-shrink:0">${I('alert', 16)}</span> Текущие группы и введённые оценки будут заменены новой структурой.</p>`,
+          `<button class="btn soft" onclick="App.closeModal()">Отмена</button>
+           <button class="btn" id="applyStruct">Заполнить журнал</button>`);
+        $('#applyStruct').onclick = () => {
+          Store.setGroups(r.groups);
+          sel.gid = null; sel.disc = null; ensureSel();
+          closeModal();
+          toast('Журнал заполнен: ' + r.count + ' групп', 'ok');
+          location.hash = '#/journal'; router();
+        };
+        return;
+      }
       if (r.imported === 0) {
         const reason = r.dates === 0
           ? 'В файле не найдены колонки с датами уроков. Заголовок должен содержать даты в формате <b>01.09</b> между «ФИО студента» и «Средний балл».'
@@ -557,15 +582,25 @@
             <div class="kv"><span>Групп в системе</span><b>${Store.groups().length}</b></div>
             <div class="kv"><span>Студентов всего</span><b>${Store.globalStats().totalStudents}</b></div>
             <div class="kv"><span>Оценок выставлено</span><b>${Store.globalStats().marks}</b></div>
+            <div class="kv"><span>Источник структуры</span><b>${Store.isCustomGroups() ? 'загружена из файла' : 'стандартная'}</b></div>
             <hr style="border:none;border-top:1px solid var(--line);margin:16px 0">
             <p class="muted" style="margin-bottom:10px">Опасная зона:</p>
-            <button class="btn soft sm" id="resetBtn" style="color:var(--c-red)">${I('trash', 16)} Очистить все оценки и темы</button>
+            <div class="flex wrap">
+              ${Store.isCustomGroups() ? `<button class="btn soft sm" id="resetStructBtn">${I('rotate', 16)} Вернуть стандартную структуру</button>` : ''}
+              <button class="btn soft sm" id="resetBtn" style="color:var(--c-red)">${I('trash', 16)} Очистить все оценки и темы</button>
+            </div>
           </div></div>
       </div>`;
     $('#saveProfile').onclick = () => {
       Store.setUser({ ...u, name: $('#setName').value, subject: $('#setSubj').value });
       paintUser(); toast('Профиль сохранён', 'ok');
     };
+    $('#resetStructBtn') && ($('#resetStructBtn').onclick = () => {
+      if (confirm('Вернуть стандартную структуру групп? Загруженная из файла структура и оценки будут удалены.')) {
+        Store.resetGroups(); sel.gid = null; sel.disc = null; ensureSel();
+        toast('Структура сброшена', 'ok'); renderSettings();
+      }
+    });
     $('#resetBtn').onclick = () => { if (confirm('Удалить ВСЕ оценки, темы и настройки? Действие необратимо.')) { Store.resetAll(); toast('Данные очищены', 'ok'); setTimeout(() => location.reload(), 600); } };
   }
 

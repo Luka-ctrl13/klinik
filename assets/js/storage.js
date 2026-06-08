@@ -34,10 +34,28 @@ const Store = (() => {
       };
       save();
     }
-    // seed-данные групп всегда из data.js (не дублируем в localStorage)
-    state.groups = (window.SEED_DATA && window.SEED_DATA.groups) || [];
+    // группы: либо загруженная пользователем структура, либо seed из data.js
+    state.groups = (state.customGroups && state.customGroups.length)
+      ? state.customGroups
+      : ((window.SEED_DATA && window.SEED_DATA.groups) || []);
     return state;
   }
+
+  // заменить структуру журнала (группы/дисциплины/студенты) загруженной из файла
+  function setGroups(groups, opts = { resetJournal: true }) {
+    state.customGroups = groups;
+    state.groups = groups;
+    if (opts.resetJournal) { state.marks = {}; state.topics = {}; state.dates = {}; }
+    save();
+  }
+  // вернуть исходные группы из data.js
+  function resetGroups() {
+    delete state.customGroups;
+    state.groups = (window.SEED_DATA && window.SEED_DATA.groups) || [];
+    state.marks = {}; state.topics = {}; state.dates = {};
+    save();
+  }
+  const isCustomGroups = () => !!(state.customGroups && state.customGroups.length);
 
   function save() {
     const { groups, ...persist } = state; // группы не сохраняем (берём из seed)
@@ -156,6 +174,6 @@ const Store = (() => {
     init, save, groups, group, datesFor, addDate, removeDate,
     getMark, setMark, getTopic, setTopic, studentAvg, groupStats,
     globalStats, setUser, user, setSetting, settings, resetAll,
-    exportState, importState, fmt
+    exportState, importState, fmt, setGroups, resetGroups, isCustomGroups
   };
 })();

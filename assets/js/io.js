@@ -103,13 +103,100 @@ const IO = (() => {
             const ws = wb.Sheets[wb.SheetNames[0]];
             aoa = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false });
           }
+          // 1) Это отчёт со структурой журнала (Группа/Дисциплина/Кол-во)?
+          const det = detectStructure(aoa);
+          if (det) {
+            const groups = buildStructure(aoa, det);
+            resolve({
+              kind: 'structure', groups,
+              count: groups.length,
+              students: groups.reduce((a, g) => a + g.students.length, 0),
+              disciplines: groups.reduce((a, g) => a + g.disciplines.length, 0)
+            });
+            return;
+          }
+          // 2) Иначе — таблица с оценками для текущей группы/дисциплины
           const res = applyMatrix(aoa, gid, disc);
+          res.kind = 'marks';
           resolve(res);
         } catch (err) { reject(err); }
       };
       reader.onerror = () => reject(new Error('Не удалось прочитать файл'));
       if (ext === 'csv') reader.readAsText(file, 'utf-8');
       else reader.readAsArrayBuffer(file);
+    });
+  }
+
+  // ---------- РАСПОЗНАВАНИЕ СТРУКТУРЫ ЖУРНАЛА (отчёт по группам/дисциплинам) ----------
+  function detectStructure(aoa) {
+    for (let r = 0; r < Math.min(aoa.length, 40); r++) {
+      const row = (aoa[r] || []).map(c => String(c == null ? '' : c).trim().toLowerCase());
+      const gi = row.findIndex(c => c === 'группа' || c === 'топ');
+      const di = row.findIndex(c => c === 'дисциплина' || c === 'пән');
+      if (gi >= 0 && di >= 0) {
+        return {
+          headerRow: r, gi, di,
+          ci: row.findIndex(c => /колич|саны|обуч/.test(c)),
+          fi: row.findIndex(c => /факультет/.test(c)),
+          ki: row.findIndex(c => /кафедр/.test(c)),
+        };
+      }
+    }
+    return null;
+  }
+
+  // пул реальных студентов из исходного контингента (для заполнения списков групп)
+  function studentPool() {
+    const seen = new Set(), pool = [];
+    ((window.SEED_DATA && window.SEED_DATA.groups) || []).forEach(g => (g.students || []).forEach(s => {
+      const key = s.iin || s.fio;
+      if (seen.has(key)) return;
+      seen.add(key); pool.push(s);
+    }));
+    return pool.length ? pool : [{ fio: 'Студент', iin: '', birth: '', sex: '' }];
+  }
+
+  function cleanDisc(list) {
+    const out = [], seen = new Set();
+    list.forEach(d => {
+      if (/^\d+\.\d/.test(d)) return;           // пропускаем длинные «задания» вида 12.3 ...
+      let s = d.trim();
+      if (s.length > 55) s = s.slice(0, 52) + '…';
+      const k = s.toLowerCase();
+      if (seen.has(k)) return;
+      seen.add(k); out.push(s);
+    });
+    return out.length ? out.slice(0, 16) : ['Профильная дисциплина'];
+  }
+
+  function buildStructure(aoa, det) {
+    const groups = {}, order = [];
+    for (let r = det.headerRow + 1; r < aoa.length; r++) {
+      const row = aoa[r] || [];
+      const g = String(row[det.gi] ?? '').trim();
+      if (!g) continue;
+      const d = String(row[det.di] ?? '').trim();
+      const cnt = parseInt(String(det.ci >= 0 ? row[det.ci] ?? '' : '').replace(/[^\d]/g, '')) || 0;
+      if (!groups[g]) {
+        groups[g] = {
+          fac: det.fi >= 0 ? String(row[det.fi] ?? '').trim() : '',
+          dep: det.ki >= 0 ? String(row[det.ki] ?? '').trim().replace(/^"|"$/g, '') : '',
+          cnt, disc: []
+        };
+        order.push(g);
+      }
+      if (cnt) groups[g].cnt = Math.max(groups[g].cnt, cnt);
+      if (d && !groups[g].disc.includes(d)) groups[g].disc.push(d);
+    }
+    if (!order.length) throw new Error('В отчёте не найдено ни одной группы');
+    const pool = studentPool(); let pi = 0;
+    return order.map((name, i) => {
+      const info = groups[name];
+      const n = Math.max(info.cnt, 5);
+      const students = [];
+      for (let k = 0; k < n; k++) { students.push({ ...pool[pi % pool.length] }); pi++; }
+      students.sort((a, b) => a.fio.localeCompare(b.fio, 'ru'));
+      return { id: 'g' + i, name, faculty: info.fac, dept: info.dep, disciplines: cleanDisc(info.disc), students };
     });
   }
 
