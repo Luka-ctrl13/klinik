@@ -388,25 +388,51 @@
   }
 
   // ============ GROUPS ============
+  let grpFilter = '', grpFac = '';
   function renderGroups() {
-    view.innerHTML = `<div class="gcards" id="gc"></div>`;
-    const gc = $('#gc');
-    Store.groups().forEach(g => {
-      const st = Store.groupStats(g.id, g.disciplines[0]) || {};
-      const el = document.createElement('div');
-      el.className = 'gcard';
-      el.innerHTML = `
-        <div class="gtop"><div class="gbadge">${esc(g.name.split(' ')[0])}</div>
-          <div><h4>${esc(g.name)}</h4><div class="meta">${esc(g.faculty || '—')}</div></div></div>
-        <div class="meta" style="min-height:32px">${esc((g.dept || '').slice(0, 70))}</div>
-        <div class="gstats">
-          <div><b>${g.students.length}</b><span>студентов</span></div>
-          <div><b>${g.disciplines.length}</b><span>дисциплин</span></div>
-          <div><b>${(st.avg || 0).toFixed(1)}</b><span>ср. балл</span></div>
-        </div>`;
-      el.onclick = () => { sel.gid = g.id; sel.disc = g.disciplines[0]; location.hash = '#/journal'; };
-      gc.appendChild(el);
-    });
+    const all = Store.groups();
+    const faculties = [...new Set(all.map(g => g.faculty).filter(Boolean))].sort();
+    view.innerHTML = `
+      <div class="toolbar">
+        <div class="ctl"><label>Поиск группы</label>
+          <input id="grpSearch" placeholder="Название, факультет, кафедра..." value="${esc(grpFilter)}" style="min-width:260px"></div>
+        <div class="ctl"><label>Факультет</label>
+          <select id="grpFac"><option value="">Все факультеты</option>
+            ${faculties.map(f => `<option value="${esc(f)}" ${f === grpFac ? 'selected' : ''}>${esc(f)}</option>`).join('')}</select></div>
+        <div class="spacer"></div>
+        <div class="ctl"><label>&nbsp;</label><span class="badge gray" id="grpCount" style="padding:9px 13px"></span></div>
+      </div>
+      <div class="gcards" id="gc"></div>`;
+
+    const draw = () => {
+      const f = grpFilter.toLowerCase().trim();
+      const list = all.filter(g =>
+        (!grpFac || g.faculty === grpFac) &&
+        (!f || (g.name + ' ' + (g.faculty || '') + ' ' + (g.dept || '')).toLowerCase().includes(f)));
+      $('#grpCount').textContent = `Найдено: ${list.length} из ${all.length}`;
+      const gc = $('#gc');
+      gc.innerHTML = '';
+      if (!list.length) { gc.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="big">${I('search', 50)}</div>Группы не найдены</div>`; return; }
+      list.forEach(g => {
+        const st = Store.groupStats(g.id, g.disciplines[0]) || {};
+        const el = document.createElement('div');
+        el.className = 'gcard';
+        el.innerHTML = `
+          <div class="gtop"><div class="gbadge">${esc(g.name.split(' ')[0])}</div>
+            <div><h4>${esc(g.name)}</h4><div class="meta">${esc(g.faculty || '—')}</div></div></div>
+          <div class="meta" style="min-height:32px">${esc((g.dept || '').slice(0, 70))}</div>
+          <div class="gstats">
+            <div><b>${g.students.length}</b><span>студентов</span></div>
+            <div><b>${g.disciplines.length}</b><span>дисциплин</span></div>
+            <div><b>${(st.avg || 0).toFixed(1)}</b><span>ср. балл</span></div>
+          </div>`;
+        el.onclick = () => { sel.gid = g.id; sel.disc = g.disciplines[0]; location.hash = '#/journal'; };
+        gc.appendChild(el);
+      });
+    };
+    $('#grpSearch').oninput = e => { grpFilter = e.target.value; draw(); };
+    $('#grpFac').onchange = e => { grpFac = e.target.value; draw(); };
+    draw();
   }
 
   // ============ ANALYTICS ============
