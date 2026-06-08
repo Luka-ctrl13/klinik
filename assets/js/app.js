@@ -44,6 +44,7 @@
 
   // ============ ROUTES ============
   const routes = {
+    schedule: { title: 'Расписание', sub: 'Сабақ кестесі — недельное расписание занятий', render: renderSchedule },
     dashboard: { title: 'Главная', sub: 'Обзор успеваемости и активности', render: renderDashboard },
     journal: { title: 'Журнал оценок', sub: 'Выставление оценок по урокам', render: renderJournal },
     topics: { title: 'Темы уроков (КТП)', sub: 'Календарно-тематическое планирование', render: renderTopics },
@@ -57,7 +58,7 @@
 
   function router() {
     destroyCharts();
-    const hash = location.hash.replace('#/', '') || 'dashboard';
+    const hash = location.hash.replace('#/', '') || 'schedule';
     const r = routes[hash] || routes.dashboard;
     document.querySelectorAll('#nav a').forEach(a => a.classList.toggle('active', a.dataset.route === hash));
     $('#pageTitle').textContent = r.title;
@@ -146,6 +147,117 @@
         datasets: [{ data: [dist[5], dist[4], dist[3], dist[2]], backgroundColor: ['#138a5b', '#1f4fd0', '#bd7a14', '#cf3b36'], borderWidth: 0 }] },
       options: { plugins: { legend: { position: 'bottom' } }, cutout: '62%' }
     }));
+  }
+
+  // ============ РАСПИСАНИЕ (Сабақ кестесі) ============
+  const SCH_DAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница'];
+  const SCH_MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+  const SCH_SLOTS = [['08:00', '08:45'], ['08:50', '09:35'], ['09:45', '10:30'], ['10:40', '11:20'], ['11:25', '12:05'], ['12:10', '12:50'], ['13:30', '14:15'], ['14:20', '15:05']];
+  const TEACHERS = ['Асель Нагашибаева', 'Юлия Сергеевна П.', 'Багдагүл Бескереева', 'Лариса Георгиевна Щ.', 'Гүлфарам Төлепкерей', 'Диля Лутфурахманова', 'Марат Сейтжанов', 'Айгүл Қасымова', 'Елена Викторовна Р.', 'Нұрлан Әбенов', 'Светлана Ивановна К.', 'Жанар Оспанова'];
+  const TOPIC_POOL = ['Новая тема', 'Повторение', 'Решение задач', 'Закрепление материала', 'Контрольная работа', 'Обобщение изученного материала', 'Итоговый урок', 'Практическое занятие', 'Лабораторная работа', 'Самостоятельная работа'];
+  const HW_POOL = ['Упражнения по теме урока', 'Подготовить конспект', 'Решить задачи из учебника', 'Повторить пройденный материал', 'Подготовиться к контрольной работе', 'Составить таблицу', 'Прочитать параграф'];
+  let schWeek = 0, schDay = ((new Date().getDay() + 6) % 7) % 5; // текущий будний день
+
+  function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function lcg(seed) { let s = seed || 1; return () => { s = (Math.imul(s, 1103515245) + 12345) & 0x7fffffff; return s / 0x7fffffff; }; }
+  const pick = (arr, n) => arr[n % arr.length];
+
+  // недельное расписание группы для буднего дня (стабильное по группе+дню)
+  function lessonsFor(g, dayIdx) {
+    const rnd = lcg(hashStr(g.id + ':' + dayIdx));
+    const n = Math.min(SCH_SLOTS.length, 4 + Math.floor(rnd() * 4)); // 4–7 уроков
+    const start = Math.floor(rnd() * Math.max(1, g.disciplines.length));
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      const disc = g.disciplines[(start + i) % g.disciplines.length];
+      const dh = hashStr(disc);
+      out.push({
+        disc, slot: SCH_SLOTS[i],
+        teacher: pick(TEACHERS, dh % TEACHERS.length),
+        room: 200 + (dh % 120),
+      });
+    }
+    return out;
+  }
+  function mondayOf(week) {
+    const d = new Date(); d.setHours(0, 0, 0, 0);
+    const dow = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - dow + week * 7);
+    return d;
+  }
+
+  function renderSchedule() {
+    ensureSel();
+    const gs = Store.groups();
+    view.innerHTML = `
+      <div class="toolbar">
+        <div class="ctl"><label>Группа</label>
+          <select id="schGroup">${gs.map(x => `<option value="${x.id}" ${x.id === sel.gid ? 'selected' : ''}>${esc(x.name)} · ${esc(x.faculty || '')}</option>`).join('')}</select></div>
+        <div class="spacer"></div>
+        <div class="year-pill"><span class="badge green">Активный</span> 2025–2026</div>
+      </div>
+      <div class="sched">
+        <div class="sched-tabs">
+          <button class="sched-nav" id="prevWeek">${I('arrowLeft', 16)} <span class="lbl-wk">Предыдущая неделя</span></button>
+          ${SCH_DAYS.map((d, i) => `<button class="sched-tab ${i === schDay ? 'active' : ''}" data-day="${i}">${esc(d)}</button>`).join('')}
+          <button class="sched-nav" id="nextWeek"><span class="lbl-wk">Следующая неделя</span> ${I('arrowRight', 16)}</button>
+        </div>
+        <div class="sched-body" id="schedBody"></div>
+      </div>`;
+    $('#schGroup').onchange = e => { sel.gid = e.target.value; const g = Store.group(sel.gid); sel.disc = g.disciplines[0]; drawSchedule(); };
+    $('#prevWeek').onclick = () => { schWeek--; drawSchedule(); };
+    $('#nextWeek').onclick = () => { schWeek++; drawSchedule(); };
+    view.querySelectorAll('.sched-tab').forEach(t => t.onclick = () => { schDay = +t.dataset.day; renderSchedule(); });
+    drawSchedule();
+  }
+
+  function drawSchedule() {
+    const g = Store.group(sel.gid);
+    const date = mondayOf(schWeek); date.setDate(date.getDate() + schDay);
+    const iso = Store.fmt(date);
+    const lessons = lessonsFor(g, schDay);
+    const head = `
+      <div class="sched-date">${date.getDate()} <span class="m-name">${SCH_MONTHS[date.getMonth()]}</span></div>
+      <div class="sched-table-wrap">
+        <table class="sched-table">
+          <thead><tr>
+            <th class="c-num">№</th><th>Предмет и преподаватель</th><th>Время и кабинет</th>
+            <th>Тема</th><th class="c-act">Урок</th><th class="c-act">Домашнее задание</th>
+          </tr></thead><tbody>`;
+    const rows = lessons.map((l, i) => {
+      const topic = Store.getTopic(g.id, l.disc, iso) || pick(TOPIC_POOL, hashStr(l.disc + iso) % TOPIC_POOL.length);
+      const hasHw = hashStr(l.disc + iso + 'hw') % 10 > 3;
+      return `<tr>
+        <td class="c-num">${i + 1}</td>
+        <td class="c-subj">
+          <div class="s-name">${esc(l.disc)}</div>
+          <div class="s-grp">${esc(g.name)}</div>
+          <div class="s-teacher">${I('users', 13)} ${esc(l.teacher)}</div>
+        </td>
+        <td class="c-time"><b>${l.slot[0]} – ${l.slot[1]}</b><span><span class="rm">каб.</span> ${l.room}</span></td>
+        <td class="c-topic">${esc(topic)}</td>
+        <td class="c-act"><button class="btn-go" data-disc="${esc(l.disc)}">Перейти</button></td>
+        <td class="c-act"><button class="btn-show" data-hw="${hasHw ? esc(pick(HW_POOL, hashStr(l.disc + iso) % HW_POOL.length)) : ''}" data-disc="${esc(l.disc)}">Показать</button></td>
+      </tr>`;
+    }).join('');
+    const empty = `<tr><td colspan="6"><div class="empty-state"><div class="big">${I('calendar', 50)}</div>На этот день уроков нет</div></td></tr>`;
+    $('#schedBody').innerHTML = head + (lessons.length ? rows : empty) + `</tbody></table></div>`;
+
+    // переход в журнал по уроку
+    $('#schedBody').querySelectorAll('.btn-go').forEach(b => b.onclick = () => {
+      sel.disc = b.dataset.disc; location.hash = '#/journal';
+    });
+    // показать домашнее задание
+    $('#schedBody').querySelectorAll('.btn-show').forEach(b => b.onclick = () => {
+      const hw = b.dataset.hw;
+      modal('Домашнее задание', `
+        <p class="muted" style="margin-bottom:6px">${esc(b.dataset.disc)}</p>
+        ${hw ? `<p style="font-size:15px;color:var(--ink)">${esc(hw)}</p>` : `<div class="empty-state" style="padding:30px"><div class="big">${I('search', 46)}</div>Домашнее задание не задано</div>`}`,
+        `<button class="btn soft" onclick="App.closeModal()">Закрыть</button>`);
+    });
+    if (window.I18n) I18n.apply($('#schedBody'));
+    // подсветить активную вкладку дня
+    view.querySelectorAll('.sched-tab').forEach((t, i) => t.classList.toggle('active', i === schDay));
   }
 
   // ============ JOURNAL ============
@@ -686,7 +798,7 @@
     $('#login').style.display = 'none';
     $('#app').style.display = 'block';
     paintUser();
-    if (!location.hash) location.hash = '#/dashboard';
+    if (!location.hash) location.hash = '#/schedule';
     router();
   }
 
