@@ -74,16 +74,25 @@
     $('#sbBackdrop') && $('#sbBackdrop').classList.remove('show');
   }
 
+  // плоская KPI-карточка с боковым акцентом и мини-прогрессом
+  function kpi(accent, icon, num, lbl, cap, prog) {
+    return `<div class="kpi" style="--accent:${accent}">
+      <div class="kpi-top"><div class="kpi-ic">${I(icon, 20)}</div><span class="kpi-cap">${esc(cap)}</span></div>
+      <div class="kpi-num">${esc(num)}</div><div class="kpi-lbl">${esc(lbl)}</div>
+      ${prog != null ? `<div class="kpi-prog"><i style="width:${Math.min(prog, 100)}%"></i></div>` : ''}
+    </div>`;
+  }
+
   // ============ DASHBOARD ============
   function renderDashboard() {
     ensureAllGrades();
     const s = Store.globalStats();
     view.innerHTML = `
-      <div class="cards">
-        ${stat('bg-blue', 'users', s.totalStudents, 'Студентов в контингенте', 'up', '+' + s.groups + ' групп')}
-        ${stat('bg-teal', 'pencil', s.marks, 'Выставлено оценок', 'up', 'журнал')}
-        ${stat('bg-green', 'star', s.avg ? s.avg.toFixed(2) : '—', 'Средний балл', s.avg >= 4 ? 'up' : 'down', s.avg ? s.avg.toFixed(1) : '0')}
-        ${stat('bg-amber', 'target', (s.quality || 0).toFixed(0) + '%', 'Качество знаний', s.quality >= 50 ? 'up' : 'down', 'оценки 4–5')}
+      <div class="kpis">
+        ${kpi('var(--c-blue)', 'school', s.groups, 'Учебных групп', 'Группы')}
+        ${kpi('var(--c-teal)', 'users', s.totalStudents, 'Студентов в контингенте', 'Контингент')}
+        ${kpi('var(--g5)', 'star', s.avg ? s.avg.toFixed(2) : '—', 'Средний балл', 'Успеваемость', (s.avg || 0) / 5 * 100)}
+        ${kpi('var(--c-amber)', 'target', (s.quality || 0).toFixed(0) + '%', 'Качество знаний', 'Качество знаний', s.quality || 0)}
       </div>
       <div class="two-col">
         <div class="panel">

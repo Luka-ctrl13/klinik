@@ -46,8 +46,8 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
-body{font-family:var(--font);background:var(--bg);color:var(--body);font-size:14px;line-height:1.5;
-  -webkit-font-smoothing:antialiased}
+body{font-family:var(--font);background:var(--bg) url(../img/pattern-light.svg) repeat;background-size:260px 260px;
+  color:var(--body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 h1,h2,h3,h4{font-family:var(--font-head);color:var(--ink);font-weight:800;letter-spacing:-.02em}
@@ -59,13 +59,10 @@ h1,h2,h3,h4{font-family:var(--font-head);color:var(--ink);font-weight:800;letter
 /* микро-метка-лейбл (заглавными, трекинг) — фирменная деталь */
 .eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
 
-/* =================== LOGIN (тёмный hero, как на сайте) =================== */
-#login{position:fixed;inset:0;z-index:100;display:flex;align-items:stretch;overflow:auto;
-  background:linear-gradient(165deg,#11286a 0%,#0c1c47 55%,#091433 100%)}
-#login::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.6;
-  background:
-    repeating-linear-gradient(90deg,transparent 0 54px,rgba(173,194,240,.04) 54px 55px),
-    repeating-linear-gradient(0deg,transparent 0 54px,rgba(173,194,240,.025) 54px 55px)}
+/* =================== LOGIN (тёмный hero, плоский) =================== */
+#login{position:fixed;inset:0;z-index:100;display:flex;align-items:stretch;overflow:auto;background:#0a1838}
+#login::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:url(../img/pattern-dark.svg) repeat;background-size:260px 260px}
 .login-split{position:relative;display:grid;grid-template-columns:1.1fr 1fr;width:100%;min-height:100vh}
 .login-left{display:flex;flex-direction:column;justify-content:center;padding:64px 7vw}
 .ll-logo{margin-bottom:30px}
@@ -434,3 +431,23 @@ svg.ico{display:block;flex-shrink:0;stroke-width:1.85}
   .legend{display:none}
 }
 @media(max-width:380px){.cards{grid-template-columns:1fr}}
+
+/* =================== ПЛОСКИЙ СТИЛЬ (без скруглений) =================== */
+*,*::before,*::after{border-radius:0!important}
+
+/* =================== KPI-карточки дашборда (плоские) =================== */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0;margin-bottom:22px;
+  border:1px solid var(--line);background:var(--card)}
+.kpi{padding:20px 22px;border-right:1px solid var(--line);position:relative;background:var(--card)}
+.kpi:last-child{border-right:none}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent,var(--brand))}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.kpi-ic{width:38px;height:38px;display:grid;place-items:center;background:var(--soft);color:var(--accent,var(--brand))}
+.kpi-cap{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.kpi-num{font-family:var(--font-head);font-size:30px;font-weight:800;color:var(--ink);line-height:1;letter-spacing:-.02em}
+.kpi-lbl{font-size:12.5px;color:var(--muted);margin-top:6px}
+.kpi-prog{height:5px;background:var(--soft);margin-top:13px;overflow:hidden;border:1px solid var(--line)}
+.kpi-prog>i{display:block;height:100%;background:var(--accent,var(--brand))}
+@media(max-width:760px){.kpis{grid-template-columns:1fr 1fr}.kpi:nth-child(2){border-right:none}
+  .kpi:nth-child(1),.kpi:nth-child(2){border-bottom:1px solid var(--line)}}
+@media(max-width:420px){.kpis{grid-template-columns:1fr}.kpi{border-right:none;border-bottom:1px solid var(--line)}}
