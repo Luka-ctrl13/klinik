@@ -164,6 +164,18 @@ window.I18n = (() => {
     'Система управления учебным процессом': { kk: 'Оқу процесін басқару жүйесі', en: 'Learning management system' },
     'Показать пароль': { kk: 'Құпиясөзді көрсету', en: 'Show password' },
 
+    // --- главная (приветствие / объявления) ---
+    'Добро пожаловать,': { kk: 'Қош келдіңіз,', en: 'Welcome,' },
+    'Объявления': { kk: 'Хабарландырулар', en: 'Announcements' },
+    'Письма': { kk: 'Хаттар', en: 'Letters' },
+    'Подробнее…': { kk: 'Толығырақ…', en: 'More…' },
+    'Дата': { kk: 'Күні', en: 'Date' },
+    'Новых писем нет': { kk: 'Жаңа хат жоқ', en: 'No new letters' },
+    'Новых уведомлений нет': { kk: 'Жаңа хабарлама жоқ', en: 'No new notifications' },
+    'Выход': { kk: 'Шығу', en: 'Log out' },
+    'Параметры авторизации': { kk: 'Авторизация параметрлері', en: 'Authorization settings' },
+    'Уведомления': { kk: 'Хабарламалар', en: 'Notifications' },
+
     // --- расписание ---
     'Расписание': { kk: 'Сабақ кестесі', en: 'Schedule' },
     'Сабақ кестесі — недельное расписание занятий': { kk: 'Сабақ кестесі — апталық сабақ кестесі', en: 'Weekly class schedule' },
@@ -219,6 +231,7 @@ window.I18n = (() => {
     nodes.forEach(n => {
       const tag = n.parentNode && n.parentNode.nodeName;
       if (tag === 'SCRIPT' || tag === 'STYLE') return;
+      if (n.parentNode && n.parentNode.closest && n.parentNode.closest('[data-noi18n]')) return;
       const o = txtOrig(n); const k = o.trim();
       if (!k) return;
       const t = tr(k);

@@ -83,12 +83,29 @@
     </div>`;
   }
 
-  // ============ DASHBOARD ============
+  const ANNOUNCEMENTS = [
+    ['08.09.2025 09:12', 'График проведения предметных кружков на 2025–2026 учебный год'],
+    ['05.09.2025 14:30', 'Расписание спортивных секций АВПК на 2025–2026 учебный год'],
+    ['03.09.2025 11:05', 'График кураторских часов отделения «Общеобразовательные дисциплины»'],
+    ['02.09.2025 16:40', 'График кураторских часов отделения «Автоматизация и управление»'],
+    ['01.09.2025 10:00', 'График кураторских часов отделения «Технические специальности»'],
+  ];
+
+  // ============ DASHBOARD (приветствие + объявления, стиль Platonus) ============
   function renderDashboard() {
     ensureAllGrades();
     const s = Store.globalStats();
+    const name = (Store.user() && Store.user().name) || 'Преподаватель';
     view.innerHTML = `
-      <div class="kpis">
+      <div class="welcome">Добро пожаловать,<b>${esc(name)}!</b></div>
+      <div class="ann-tabs">
+        <button class="ann-tab active" data-tab="ann">Объявления</button>
+        <button class="ann-tab" data-tab="letters">Письма</button>
+      </div>
+      <div class="ann" id="annBox"></div>
+      <button class="btn ann-more" id="annMore">Подробнее…</button>
+
+      <div class="kpis" style="margin-top:26px">
         ${kpi('var(--c-blue)', 'school', s.groups, 'Учебных групп', 'Группы')}
         ${kpi('var(--c-teal)', 'users', s.totalStudents, 'Студентов в контингенте', 'Контингент')}
         ${kpi('var(--g5)', 'star', s.avg ? s.avg.toFixed(2) : '—', 'Средний балл', 'Успеваемость', (s.avg || 0) / 5 * 100)}
@@ -127,6 +144,24 @@
       el.onclick = () => { sel.gid = g.id; sel.disc = g.disciplines[0]; location.hash = '#/journal'; };
       qg.appendChild(el);
     });
+
+    // объявления / письма
+    const drawAnn = (tab) => {
+      if (tab === 'letters') {
+        $('#annBox').innerHTML = `<div class="empty-state"><div class="big">${I('mail', 50)}</div>Новых писем нет</div>`;
+        return;
+      }
+      $('#annBox').innerHTML = `<table class="ann-table"><thead><tr><th>Дата</th><th>Тема</th></tr></thead><tbody>${
+        ANNOUNCEMENTS.map(a => `<tr><td class="ann-date">${esc(a[0])}</td><td class="ann-theme"><a href="#/schedule">${esc(a[1])}.</a></td></tr>`).join('')
+        }</tbody></table>`;
+      if (window.I18n) I18n.apply($('#annBox'));
+    };
+    drawAnn('ann');
+    view.querySelectorAll('.ann-tab').forEach(t => t.onclick = () => {
+      view.querySelectorAll('.ann-tab').forEach(x => x.classList.toggle('active', x === t));
+      drawAnn(t.dataset.tab);
+    });
+    $('#annMore').onclick = () => toast('Все объявления доступны на портале колледжа', 'info');
 
     drawDashCharts();
   }
@@ -811,6 +846,20 @@
     router();
   }
 
+  // живые часы в боковой панели
+  function startClock() {
+    const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+    const mon = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+    const p = n => String(n).padStart(2, '0');
+    const upd = () => {
+      const d = new Date();
+      const t = $('#clkTime'), dt = $('#clkDate');
+      if (t) t.textContent = p(d.getHours()) + ':' + p(d.getMinutes());
+      if (dt) dt.textContent = days[d.getDay()] + ', ' + d.getDate() + ' ' + mon[d.getMonth()];
+    };
+    upd(); clearInterval(window.__clk); window.__clk = setInterval(upd, 15000);
+  }
+
   function bootstrap() {
     Store.init();
     // цвета графиков под светлую тему
@@ -840,12 +889,30 @@
       ev.preventDefault();
       toast('Для восстановления доступа обратитесь к администратору колледжа', 'info');
     });
-    $('#logoutBtn').addEventListener('click', () => { Store.setUser(null); location.reload(); });
+    const logout = () => { Store.setUser(null); location.reload(); };
+    $('#logoutBtn') && $('#logoutBtn').addEventListener('click', logout);
+    $('#logoutBtn2') && $('#logoutBtn2').addEventListener('click', logout);
+    // гамбургер: на мобильном — выезжающее меню, на десктопе — свернуть панель
     $('#hamb').addEventListener('click', () => {
-      const open = $('#sidebar').classList.toggle('open');
-      $('#sbBackdrop').classList.toggle('show', open);
+      if (window.matchMedia('(max-width:860px)').matches) {
+        const open = $('#sidebar').classList.toggle('open');
+        $('#sbBackdrop').classList.toggle('show', open);
+      } else {
+        $('#app').classList.toggle('nav-collapsed');
+      }
     });
     $('#sbBackdrop').addEventListener('click', closeSidebar);
+    // меню пользователя (выпадающее)
+    const um = $('#userMenu');
+    um && um.addEventListener('click', e => {
+      if (e.target.closest('a') || e.target.closest('#logoutBtn')) return;
+      e.stopPropagation(); um.classList.toggle('open');
+    });
+    document.addEventListener('click', () => um && um.classList.remove('open'));
+    // уведомления (демо)
+    $('#notifBtn') && $('#notifBtn').addEventListener('click', () => toast('Новых уведомлений нет', 'info'));
+    // живые часы в боковой панели
+    startClock();
     // переключатель языков (RU / KZ / EN) — реальная смена языка
     const LMAP = { RU: 'ru', KZ: 'kk', EN: 'en' };
     if ($('#langs')) {
@@ -862,13 +929,6 @@
         document.documentElement.lang = code;
       });
     }
-    $('#quickExport').addEventListener('click', () => { ensureSel(); toast('Выгружено: ' + IO.exportXLSX(sel.gid, sel.disc), 'ok'); });
-
-    // глобальный поиск -> студенты
-    $('#globalSearch').addEventListener('keydown', e => {
-      if (e.key === 'Enter') { stFilter = e.target.value; location.hash = '#/students'; }
-    });
-
     window.addEventListener('hashchange', router);
 
     // всплывающая подсказка с полным ФИО при наведении

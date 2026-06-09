@@ -64,56 +64,60 @@
   </div>
 </div>
 
-<!-- ============ APP ============ -->
+<!-- ============ APP (стиль Platonus) ============ -->
 <div id="app">
-<div class="layout">
-  <div class="sidebar-backdrop" id="sbBackdrop"></div>
-  <!-- SIDEBAR (компактный, разворачивается при наведении) -->
-  <aside class="sidebar" id="sidebar">
-    <div class="brand">
-      <div class="mark">А</div>
-      <div class="brand-text"><b>Учебный портал</b><span>АВПК · 2025–2026</span></div>
+  <!-- ВЕРХНЯЯ ШАПКА -->
+  <header class="phead">
+    <div class="phead-logo"><span class="plg">▦</span><b>АВПК</b></div>
+    <button class="phead-burger" id="hamb">☰</button>
+    <div class="phead-title" id="pageTitle">Главная</div>
+    <div class="phead-sp"></div>
+    <div class="langs" id="langs">
+      <button class="active">RU</button><button>KZ</button><button>EN</button>
     </div>
-    <nav class="nav" id="nav">
-      <div class="group-label">Основное</div>
-      <a href="#/schedule" data-route="schedule" title="Расписание"><span class="ic" data-icon="calendar"></span><span class="lbl">Расписание</span></a>
-      <a href="#/dashboard" data-route="dashboard" title="Главная"><span class="ic" data-icon="home"></span><span class="lbl">Главная</span></a>
-      <a href="#/journal" data-route="journal" title="Журнал оценок"><span class="ic" data-icon="table"></span><span class="lbl">Журнал оценок</span></a>
-      <a href="#/topics" data-route="topics" title="Темы уроков"><span class="ic" data-icon="book"></span><span class="lbl">Темы уроков</span></a>
-      <a href="#/attendance" data-route="attendance" title="Посещаемость"><span class="ic" data-icon="check"></span><span class="lbl">Посещаемость</span></a>
-      <div class="group-label">Данные</div>
-      <a href="#/students" data-route="students" title="Контингент"><span class="ic" data-icon="users"></span><span class="lbl">Контингент</span></a>
-      <a href="#/groups" data-route="groups" title="Группы"><span class="ic" data-icon="school"></span><span class="lbl">Группы</span></a>
-      <a href="#/analytics" data-route="analytics" title="Аналитика"><span class="ic" data-icon="chart"></span><span class="lbl">Аналитика</span></a>
-      <div class="group-label">Сервис</div>
-      <a href="#/io" data-route="io" title="Импорт / Экспорт"><span class="ic" data-icon="swap"></span><span class="lbl">Импорт / Экспорт</span></a>
-      <a href="#/settings" data-route="settings" title="Настройки"><span class="ic" data-icon="settings"></span><span class="lbl">Настройки</span></a>
-    </nav>
-    <div class="foot">
-      <div class="user-chip">
-        <div class="av" id="userAv">П</div>
-        <div class="user-meta"><b id="userName">Преподаватель</b><span>Преподаватель</span></div>
+    <button class="phead-ic" id="notifBtn" title="Уведомления">
+      <span data-icon="bell" data-size="19"></span><span class="phead-badge">3</span>
+    </button>
+    <div class="phead-user" id="userMenu">
+      <div class="phead-av" id="userAv">П</div>
+      <b id="userName">Преподаватель</b>
+      <span class="caret">▾</span>
+      <div class="user-dd" id="userDd">
+        <a href="#/students"><span data-icon="users" data-size="16"></span> Контингент</a>
+        <a href="#/io"><span data-icon="swap" data-size="16"></span> Импорт / Экспорт</a>
+        <a href="#/settings"><span data-icon="settings" data-size="16"></span> Параметры авторизации</a>
+        <button id="logoutBtn"><span data-icon="logout" data-size="16"></span> Выход</button>
       </div>
-      <button class="btn soft sm block logout" id="logoutBtn"><span class="ic" data-icon="logout" data-size="16"></span><span class="lbl">Выйти</span></button>
     </div>
-  </aside>
+    <button class="phead-ic phead-power" id="logoutBtn2" title="Выход"><span data-icon="logout" data-size="19"></span></button>
+  </header>
 
-  <!-- MAIN -->
-  <div class="main">
-    <div class="topbar">
-      <button class="icon-btn hamb" id="hamb">☰</button>
-      <div class="page-title" id="pageTitle">Главная</div>
-      <div class="spacer"></div>
-      <div class="search">
-        <span class="ic" data-icon="search" data-size="17"></span>
-        <input id="globalSearch" type="text" placeholder="Поиск студента по ФИО / ИИН...">
+  <div class="layout">
+    <div class="sidebar-backdrop" id="sbBackdrop"></div>
+    <!-- БОКОВАЯ ПАНЕЛЬ -->
+    <aside class="sidebar" id="sidebar">
+      <div class="clock" data-noi18n>
+        <div class="clk-time" id="clkTime">--:--</div>
+        <div class="clk-date" id="clkDate">—</div>
       </div>
-      <div class="langs" id="langs">
-        <button class="active">RU</button><button>KZ</button><button>EN</button>
-      </div>
-      <button class="icon-btn" id="quickExport" title="Быстрый экспорт текущего журнала"><span data-icon="download" data-size="18"></span></button>
-    </div>
-    <div class="content" id="view"><!-- routed views --></div>
+      <nav class="nav" id="nav">
+        <a href="#/dashboard" data-route="dashboard" title="Главная"><span class="ic" data-icon="home"></span><span class="lbl">Главная</span></a>
+        <a href="#/schedule" data-route="schedule" title="Расписание"><span class="ic" data-icon="calendar"></span><span class="lbl">Расписание</span></a>
+        <a href="#/journal" data-route="journal" title="Журнал оценок"><span class="ic" data-icon="table"></span><span class="lbl">Журнал оценок</span></a>
+        <a href="#/topics" data-route="topics" title="Темы уроков"><span class="ic" data-icon="book"></span><span class="lbl">Темы уроков</span></a>
+        <a href="#/attendance" data-route="attendance" title="Посещаемость"><span class="ic" data-icon="check"></span><span class="lbl">Посещаемость</span></a>
+        <a href="#/students" data-route="students" title="Контингент"><span class="ic" data-icon="users"></span><span class="lbl">Контингент</span></a>
+        <a href="#/groups" data-route="groups" title="Группы"><span class="ic" data-icon="school"></span><span class="lbl">Группы</span></a>
+        <a href="#/analytics" data-route="analytics" title="Аналитика"><span class="ic" data-icon="chart"></span><span class="lbl">Аналитика</span></a>
+        <a href="#/io" data-route="io" title="Импорт / Экспорт"><span class="ic" data-icon="swap"></span><span class="lbl">Импорт / Экспорт</span></a>
+        <a href="#/settings" data-route="settings" title="Настройки"><span class="ic" data-icon="settings"></span><span class="lbl">Настройки</span></a>
+      </nav>
+    </aside>
+
+    <!-- КОНТЕНТ -->
+    <main class="main">
+      <div class="content" id="view"><!-- routed views --></div>
+    </main>
   </div>
 </div>
 </div>
