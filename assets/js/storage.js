@@ -72,10 +72,13 @@ const Store = (() => {
     suspend++;
     try { fn(); } finally { suspend--; if (suspend === 0 && dirty) { dirty = false; save(); } }
   }
-  // быстрое распределение оценок (по объекту marks, без обхода всех дат)
+  // распределение по 100-балльной шкале (5:90–100, 4:75–89, 3:50–74, 2:0–49)
   function markDistribution() {
     const d = { 5: 0, 4: 0, 3: 0, 2: 0 };
-    for (const k in state.marks) { const v = state.marks[k]; if (d[v] != null) d[v]++; }
+    for (const k in state.marks) {
+      const n = parseFloat(state.marks[k]); if (isNaN(n)) continue;
+      if (n >= 90) d[5]++; else if (n >= 75) d[4]++; else if (n >= 50) d[3]++; else d[2]++;
+    }
     return d;
   }
 
@@ -146,29 +149,29 @@ const Store = (() => {
       });
     });
     const avg = all.length ? all.reduce((a, b) => a + b, 0) / all.length : 0;
-    const success = all.length ? all.filter(v => v >= 3).length / all.length * 100 : 0; // успеваемость
-    const quality = all.length ? all.filter(v => v >= 4).length / all.length * 100 : 0; // качество знаний
+    const success = all.length ? all.filter(v => v >= 50).length / all.length * 100 : 0; // успеваемость (≥50)
+    const quality = all.length ? all.filter(v => v >= 75).length / all.length * 100 : 0; // качество знаний (≥75)
     const attendance = total ? (1 - absent / total) * 100 : 100;
     return { avg, success, quality, attendance, count: all.length, absent };
   }
 
   // глобальная статистика для дашборда
   function globalStats() {
-    let marks = 0, fives = 0, absent = 0, lessons = 0;
+    let marks = 0, excellent = 0, absent = 0, lessons = 0;
     let totalStudents = 0;
     groups().forEach(g => totalStudents += g.students.length);
     Object.values(state.marks).forEach(v => {
       marks++;
-      if (v === '5') fives++;
+      if (parseFloat(v) >= 90) excellent++;
       if (v === 'Н' || v === 'н') { absent++; }
     });
     lessons = Object.keys(state.topics).length;
     const nums = Object.values(state.marks).map(parseFloat).filter(v => !isNaN(v));
     const avg = nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : 0;
-    const quality = nums.length ? nums.filter(v => v >= 4).length / nums.length * 100 : 0;
+    const quality = nums.length ? nums.filter(v => v >= 75).length / nums.length * 100 : 0;
     return {
       groups: groups().length, totalStudents,
-      marks, fives, absent, lessons, avg, quality
+      marks, excellent, absent, lessons, avg, quality
     };
   }
 

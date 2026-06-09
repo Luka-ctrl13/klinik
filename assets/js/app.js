@@ -20,7 +20,10 @@
     setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(40px)'; setTimeout(() => t.remove(), 300); }, 3200);
   }
   function destroyCharts() { charts.forEach(c => { try { c.destroy(); } catch (e) {} }); charts = []; }
-  const grColor = v => v >= 4.5 ? 'm5' : v >= 3.5 ? 'm4' : v >= 2.5 ? 'm3' : 'm2';
+  // цвет по 100-балльной шкале: 90–100 / 75–89 / 50–74 / 0–49
+  const grColor = v => v >= 90 ? 'm5' : v >= 75 ? 'm4' : v >= 50 ? 'm3' : 'm2';
+  // класс ячейки для оценки/отсутствия
+  const markClass = v => (v === 'Н' || v === 'н') ? 'att' : (v === '' || v == null ? '' : grColor(parseFloat(v)));
 
   // модалка
   function modal(title, body, foot) {
@@ -108,7 +111,7 @@
       <div class="kpis" style="margin-top:26px">
         ${kpi('var(--c-blue)', 'school', s.groups, 'Учебных групп', 'Группы')}
         ${kpi('var(--c-teal)', 'users', s.totalStudents, 'Студентов в контингенте', 'Контингент')}
-        ${kpi('var(--g5)', 'star', s.avg ? s.avg.toFixed(2) : '—', 'Средний балл', 'Успеваемость', (s.avg || 0) / 5 * 100)}
+        ${kpi('var(--g5)', 'star', s.avg ? s.avg.toFixed(1) : '—', 'Средний балл (из 100)', 'Успеваемость', s.avg || 0)}
         ${kpi('var(--c-amber)', 'target', (s.quality || 0).toFixed(0) + '%', 'Качество знаний', 'Качество знаний', s.quality || 0)}
       </div>
       <div class="two-col">
@@ -181,7 +184,7 @@
     charts.push(new Chart($('#chDash'), {
       type: 'bar',
       data: { labels, datasets: [{ label: 'Средний балл', data, backgroundColor: '#1f4fd0', borderRadius: 5, maxBarThickness: 34 }] },
-      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 5 } }, responsive: true }
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } }, responsive: true }
     }));
     // распределение оценок (быстрый подсчёт по сохранённым оценкам)
     const dist = Store.markDistribution();
@@ -338,9 +341,9 @@
           const rnd = Math.random();
           if (rnd < 0.05) { Store.setMark(gid, disc, d, si, 'Н'); return; } // ~5% отсутствий
           if (rnd < 0.22) return;                                          // ~17% ячеек пустые
-          const x = ability * 0.7 + Math.random() * 0.3;
-          const v = x > 0.82 ? '5' : x > 0.55 ? '4' : x > 0.3 ? '3' : '2';
-          Store.setMark(gid, disc, d, si, v);
+          const x = ability * 0.7 + Math.random() * 0.3;      // 0..1
+          const v = Math.round(40 + x * 60);                  // ~40..100 баллов
+          Store.setMark(gid, disc, d, si, String(Math.min(100, v)));
         });
       });
     });
@@ -367,8 +370,8 @@
         <div class="panel-head">
           <h3 id="jTitle"></h3><div class="spacer"></div>
           <div class="legend" style="margin-right:8px">
-            <span><b class="chip-grade m5">5</b></span><span><b class="chip-grade m4">4</b></span>
-            <span><b class="chip-grade m3">3</b></span><span><b class="chip-grade m2">2</b></span>
+            <span><b class="chip-grade m5">90+</b></span><span><b class="chip-grade m4">75+</b></span>
+            <span><b class="chip-grade m3">50+</b></span><span><b class="chip-grade m2">&lt;50</b></span>
             <span><b class="att">Н</b> — отсутствовал</span>
           </div>
           <button class="btn ghost sm" id="fillBtn">${I('pencil', 16)} Заполнить оценками</button>
@@ -380,7 +383,7 @@
           <div id="journalGrid"></div>
         </div>
       </div>
-      <p class="muted center" style="margin-top:6px">Введите оценку (2–5) или «Н» (отсутствие). Данные сохраняются автоматически. Клик по дате — удалить урок.</p>`;
+      <p class="muted center" style="margin-top:6px">Введите оценку (0–100) или «Н» (отсутствие). Данные сохраняются автоматически. Клик по дате — удалить урок.</p>`;
     wireSelector(renderJournal);
     drawGrid();
     $('#fillBtn').onclick = () => {
@@ -407,10 +410,9 @@
         <td class="col-name"><div class="namecell"><span class="avatar-sm">${esc(initials(st.fio))}</span><span class="sname" data-full="${esc(st.fio)}">${esc(st.fio)}</span></div></td>`;
       dates.forEach(d => {
         const v = Store.getMark(sel.gid, sel.disc, d, si);
-        const cls = v === 'Н' || v === 'н' ? 'att' : (v ? 'm' + v : '');
-        html += `<td class="cell"><input data-si="${si}" data-d="${d}" maxlength="2" value="${esc(v)}" class="${cls}"></td>`;
+        html += `<td class="cell"><input data-si="${si}" data-d="${d}" maxlength="3" value="${esc(v)}" class="${markClass(v)}"></td>`;
       });
-      html += `<td class="avg-col"><span class="avgval ${avg ? grColor(avg) : ''}">${avg == null ? '—' : avg.toFixed(2)}</span></td></tr>`;
+      html += `<td class="avg-col"><span class="avgval ${avg != null ? grColor(avg) : ''}">${avg == null ? '—' : avg.toFixed(1)}</span></td></tr>`;
     });
     html += `</tbody></table></div>`;
     $('#journalGrid').innerHTML = html;
@@ -419,11 +421,12 @@
     $('#journalGrid').querySelectorAll('.cell input').forEach(inp => {
       inp.addEventListener('input', e => {
         let v = e.target.value.trim();
-        if (v && !/^([2-5]|[нНnNбБ+\-])$/.test(v)) { v = v.slice(0, 1); }
-        if (v === 'n' || v === 'N' || v === 'б' || v === 'Б') v = 'Н';
+        if (/^[нНnNбБ]/.test(v)) v = 'Н';                 // отсутствие
+        else { v = v.replace(/\D/g, '');                  // только цифры
+          if (v !== '' && +v > 100) v = '100'; }
         e.target.value = v;
         Store.setMark(sel.gid, sel.disc, e.target.dataset.d, +e.target.dataset.si, v);
-        e.target.className = v === 'Н' ? 'att' : (v ? 'm' + v : '');
+        e.target.className = markClass(v);
         updateRowAvg(e.target.closest('tr'), +e.target.dataset.si);
       });
       inp.addEventListener('keydown', e => {
@@ -445,7 +448,7 @@
   function updateRowAvg(tr, si) {
     const avg = Store.studentAvg(sel.gid, sel.disc, si);
     const cell = tr.querySelector('.avgval');
-    cell.textContent = avg == null ? '—' : avg.toFixed(2);
+    cell.textContent = avg == null ? '—' : avg.toFixed(1);
     cell.className = 'avgval ' + (avg ? grColor(avg) : '');
   }
   function addLessonPrompt() {
@@ -631,9 +634,9 @@
     const g = Store.group(sel.gid);
     const s = Store.groupStats(sel.gid, sel.disc) || { avg: 0, success: 0, quality: 0, attendance: 100, count: 0 };
     $('#anCards').innerHTML = `
-      ${stat('bg-blue', 'star', s.avg.toFixed(2), 'Средний балл', s.avg >= 4 ? 'up' : 'down', 'группа')}
-      ${stat('bg-green', 'trendUp', s.success.toFixed(0) + '%', 'Успеваемость', 'up', '≥3')}
-      ${stat('bg-amber', 'target', s.quality.toFixed(0) + '%', 'Качество знаний', s.quality >= 50 ? 'up' : 'down', '≥4')}
+      ${stat('bg-blue', 'star', s.avg.toFixed(1), 'Средний балл (из 100)', s.avg >= 50 ? 'up' : 'down', 'группа')}
+      ${stat('bg-green', 'trendUp', s.success.toFixed(0) + '%', 'Успеваемость', 'up', '≥50')}
+      ${stat('bg-amber', 'target', s.quality.toFixed(0) + '%', 'Качество знаний', s.quality >= 50 ? 'up' : 'down', '≥75')}
       ${stat('bg-teal', 'check', s.attendance.toFixed(0) + '%', 'Посещаемость', s.attendance >= 90 ? 'up' : 'down', 'присут.')}`;
 
     // показатели — прогресс-бары
@@ -648,9 +651,9 @@
     $('#ratingTable').innerHTML = `<thead><tr><th>Место</th><th>Студент</th><th>Средний балл</th><th>Уровень</th></tr></thead><tbody>${
       ranked.map((r, i) => `<tr><td><b>${i + 1}</b></td>
         <td><span class="avatar-sm">${esc(initials(r.fio))}</span>${esc(r.fio)}</td>
-        <td><b class="${grColor(r.avg)}">${r.avg.toFixed(2)}</b></td>
-        <td><span class="badge ${r.avg >= 4.5 ? 'green' : r.avg >= 3.5 ? 'blue' : r.avg >= 2.5 ? 'amber' : 'gray'}">${
-          r.avg >= 4.5 ? 'Отличник' : r.avg >= 3.5 ? 'Хорошист' : r.avg >= 2.5 ? 'Удовл.' : 'Слабо'}</span></td></tr>`).join('')
+        <td><b class="${grColor(r.avg)}">${r.avg.toFixed(1)}</b></td>
+        <td><span class="badge ${r.avg >= 90 ? 'green' : r.avg >= 75 ? 'blue' : r.avg >= 50 ? 'amber' : 'gray'}">${
+          r.avg >= 90 ? 'Отличник' : r.avg >= 75 ? 'Хорошист' : r.avg >= 50 ? 'Удовл.' : 'Слабо'}</span></td></tr>`).join('')
       || `<tr><td colspan="4"><div class="empty-state">Нет оценок для рейтинга</div></td></tr>`}</tbody>`;
 
     if (window.Chart) {
@@ -706,7 +709,7 @@
           <code>Группа</code>, <code>Дисциплина</code>, <code>Количество обучающихся</code>.
           Приложение само создаст все группы, дисциплины и списки студентов — журнал заполнится автоматически.</p>
           <p class="muted"><b>2. Таблица журнала с оценками</b> — строка заголовка
-          <code>№ | ФИО студента | даты (01.09, …) | Средний балл</code>. Оценки (2–5 или «Н») расставятся
+          <code>№ | ФИО студента | даты (01.09, …) | Средний балл</code>. Оценки (0–100 или «Н») расставятся
           по студентам выбранной группы. Строка <b>«Тема урока →»</b> загружает темы.</p>
         </div></div>`;
     wireSelector(() => { const g2 = Store.group(sel.gid); $('#impTarget').textContent = `${g2.name} — ${sel.disc}`; });
@@ -769,7 +772,7 @@
           ? 'В файле не найдены колонки с датами уроков. Заголовок должен содержать даты в формате <b>01.09</b> между «ФИО студента» и «Средний балл».'
           : r.matched === 0
             ? 'Ни один студент не совпал по ФИО с выбранной группой. Проверьте, что вы загружаете журнал в ту же группу, из которой он был выгружен, и что ФИО во 2-й колонке совпадают.'
-            : 'Ячейки с оценками пустые — заполните оценки (2–5 или «Н») в файле и загрузите снова.';
+            : 'Ячейки с оценками пустые — заполните оценки (0–100 или «Н») в файле и загрузите снова.';
         modal('Оценки не загружены', `
           <p class="muted">${reason}</p>
           <p class="muted mt">Распознано: дат — <b>${r.dates}</b>, студентов сопоставлено — <b>${r.matched}</b> из ${r.students}.</p>
@@ -807,7 +810,7 @@
         <div class="panel"><div class="panel-head"><h3>Система</h3></div>
           <div class="panel-body">
             <div class="field"><label>Система оценивания</label>
-              <select id="setScale"><option value="5">5-балльная (2–5)</option><option value="100">100-балльная</option></select></div>
+              <select id="setScale" disabled><option value="100">100-балльная</option></select></div>
             <div class="kv"><span>Групп в системе</span><b>${Store.groups().length}</b></div>
             <div class="kv"><span>Студентов всего</span><b>${Store.globalStats().totalStudents}</b></div>
             <div class="kv"><span>Оценок выставлено</span><b>${Store.globalStats().marks}</b></div>
